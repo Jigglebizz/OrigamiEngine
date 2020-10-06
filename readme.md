@@ -9,7 +9,7 @@ C:\
 
 I'm linking SDL2 statically, which took a little 2 steps to get to build on Windows:
 
-1. Add the following lines to src\corewindows\SDL_windows.h
+1. Add the following lines to src\core\windows\SDL_windows.h
 
 
 ```
