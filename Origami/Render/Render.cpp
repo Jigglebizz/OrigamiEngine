@@ -208,10 +208,19 @@ void Render::FreeTex( TexHandle tex_handle )
 }
 
 //---------------------------------------------------------------------------------
+void Render::SetTexPosition( TexHandle tex_handle, int x, int y )
+{
+  RenderCon*   con = &s_RenderCon;
+  TextureInfo* tex = &con->m_Textures[ tex_handle ];
+  tex->m_X = x;
+  tex->m_Y = y;
+}
+
+
+//---------------------------------------------------------------------------------
 void Render::Draw()
 {
   RenderCon* con = &s_RenderCon;
-
 
   SDL_RenderClear( con->m_Renderer );
   for ( int32_t i_layer = kMaxLayers - 1; i_layer >= 0; --i_layer )

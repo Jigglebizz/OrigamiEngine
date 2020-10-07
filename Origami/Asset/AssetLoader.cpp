@@ -1,16 +1,21 @@
 #include "Origami/pch.h"
 #include "AssetLoader.h"
 
-#include "SDL.h"
 #include <fstream>
+#include <direct.h>
 
 #include "Origami/Util/StringUtil.h"
 #include "Origami/Util/Log.h"
 
+constexpr uint32_t kMaxPathLen = 128;
+
+DISABLE_OPTS
+
+//---------------------------------------------------------------------------------
 char* AssetLoader::Load( const char* asset_name )
 {
-  char full_path[128];
-  snprintf( full_path, 128, "%s%s%s", AssetLoader::GetAssetPath(), "\\", asset_name );
+  char full_path[ kMaxPathLen ];
+  snprintf( full_path, kMaxPathLen, "%s%s%s", AssetLoader::GetAssetsSourcePath(), "\\", asset_name );
 
   std::ifstream file( full_path, std::ios::binary | std::ios::in | std::ios::ate );
   if ( file.good() == false )
@@ -37,12 +42,14 @@ char* AssetLoader::Load( const char* asset_name )
   return (char*)asset;
 }
 
-void  AssetLoader::Free( void* asset )
+//---------------------------------------------------------------------------------
+void AssetLoader::Free( void* asset )
 {
   free( asset );
 }
 
-const char* AssetLoader::GetAssetPath()
+//---------------------------------------------------------------------------------
+const char* GetAssetsBasePath()
 {
 #ifdef _WIN32
   const char PATH_SEP = '\\';
@@ -50,12 +57,15 @@ const char* AssetLoader::GetAssetPath()
   const char PATH_SEP = '/';
 #endif
 
-  static char base_res[ 256 ];
-  char* base_path = SDL_GetBasePath();
-  if ( StrLen( base_path ) != 0)
+  static char base_path[ kMaxPathLen ];
+
+  if ( *base_path == 0 )
   {
+    char* cwd_path = _getcwd( NULL, kMaxPathLen );
+    //snprintf(base_path, kMaxPathLen, "%s", .c_str() );
+
     const char* project_dir_name = "Origami";
-    char* project_folder_start   = strstr( base_path, project_dir_name );
+    char* project_folder_start   = strstr( cwd_path, project_dir_name );
 
     if ( project_folder_start == nullptr )
     {
@@ -63,17 +73,33 @@ const char* AssetLoader::GetAssetPath()
       return "";
     }
 
-    project_folder_start[ StrLen( project_dir_name) + 1 ] = 0;
+    project_folder_start[ StrLen( project_dir_name ) + 1 ] = 0;
 
-    strcpy_s( base_res, base_path );
-    SDL_free( base_path );
+    // strcpy_s( base_path, base_path );
 
-    snprintf( base_res, 256, "%s%s", base_res, "Assets" );
-
-    return base_res;
+    snprintf( base_path, kMaxPathLen, "%s%s", cwd_path, "Assets" );
   }
+  return base_path;
+}
 
-  Log::LogError( "Error getting resource path: %s\n", SDL_GetError() );
-  return "";
+//---------------------------------------------------------------------------------
+const char* AssetLoader::GetAssetsSourcePath()
+{
+  static char source_path[ kMaxPathLen ];
+  if ( *source_path == 0)
+  {
+    snprintf( source_path, kMaxPathLen, "%s%s", GetAssetsBasePath(), "\\source" );
+  }
+  return source_path;
+}
 
+//---------------------------------------------------------------------------------
+const char* AssetLoader::GetAssetsBuiltPath()
+{
+  static char built_path[ kMaxPathLen ];
+  if ( *built_path == 0)
+  {
+    snprintf( built_path, kMaxPathLen, "%s%s", GetAssetsBasePath(), "\\built");
+  }
+  return built_path;
 }

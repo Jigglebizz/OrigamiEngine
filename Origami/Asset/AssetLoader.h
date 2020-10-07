@@ -10,7 +10,8 @@ namespace AssetLoader
   };
   
   //---------------------------------------------------------------------------------
-  const char* GetAssetPath();
+  const char* GetAssetsSourcePath();
+  const char* GetAssetsBuiltPath();
  
   //---------------------------------------------------------------------------------
   char* Load( const char* asset_path );

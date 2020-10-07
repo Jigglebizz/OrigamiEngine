@@ -12,8 +12,10 @@ namespace Render
   using TexHandle = uint64_t;
   static constexpr TexHandle kInvalidTexHandle = 0;
 
-  TexHandle ENGINE_API AllocTex( void* data_header, uint32_t layer = 0);
-  void      ENGINE_API FreeTex( TexHandle id );
+  //---------------------------------------------------------------------------------
+  TexHandle ENGINE_API AllocTex       ( void* data_header, uint32_t layer = 0);
+  void      ENGINE_API FreeTex        ( TexHandle handle );
+  void      ENGINE_API SetTexPosition ( TexHandle handle, int x, int y );
 
   //---------------------------------------------------------------------------------
   struct TextureAsset

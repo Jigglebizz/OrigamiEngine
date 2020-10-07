@@ -24,20 +24,14 @@ int main( int argc, char* argv[] )
   char* test_sprite_data = AssetLoader::Load( "smallsprite.png" );
   Render::TexHandle sprite_handle = Render::AllocTex( test_sprite_data );
 
-  Render::FreeTex ( test_asset_handle );
-
-  test_asset_data = AssetLoader::Load("test.bmp");
-  Render::AllocTex( test_asset_data   );
-
-  Render::FreeTex  ( sprite_handle );
-
-  test_sprite_data = AssetLoader::Load("smallsprite.png");
-  Render::AllocTex ( test_sprite_data );
-
+  int i = 0;
+  SDL_Event evt;
   while (1)
   {
+    SDL_PollEvent( &evt );
+    Render::SetTexPosition( sprite_handle, i, i );
     Render::Draw();
-    SDL_Delay( 1000 );
+    i++;
   }
 
   Render::Destroy();

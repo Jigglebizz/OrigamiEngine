@@ -10,6 +10,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BasicGame", "BasicGame\Basi
 		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2} = {0592D08A-15BC-4A10-8F32-9C9F6BE452D2}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Kami", "Kami\Kami.vcxproj", "{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -25,10 +27,16 @@ Global
 		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Release|x64.Build.0 = Release|x64
 		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Debug|x64.ActiveCfg = Debug|x64
 		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Debug|x64.Build.0 = Debug|x64
-		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Final|x64.ActiveCfg = Release|x64
-		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Final|x64.Build.0 = Release|x64
+		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Final|x64.ActiveCfg = Final|x64
+		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Final|x64.Build.0 = Final|x64
 		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Release|x64.ActiveCfg = Release|x64
 		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Release|x64.Build.0 = Release|x64
+		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Debug|x64.ActiveCfg = Debug|x64
+		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Debug|x64.Build.0 = Debug|x64
+		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Final|x64.ActiveCfg = Final|x64
+		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Final|x64.Build.0 = Final|x64
+		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Release|x64.ActiveCfg = Release|x64
+		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
