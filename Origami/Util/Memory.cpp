@@ -32,7 +32,16 @@ bool Bitset::IsSet( uint32_t index ) const
 //---------------------------------------------------------------------------------
 void Bitset::Set( uint32_t index, bool enabled )
 {
-  m_Set[ index >> 0x3 ] |= ( 0x01 << ( index & 0x7 ) );
+  uint32_t idx = index >> 0x3;
+  uint8_t  bit = ( 0x01 << ( index & 0x7 ) );
+  if ( enabled )
+  {
+    m_Set[ idx ] |= bit;
+  }
+  else
+  {
+    m_Set[ idx ] &= ~bit;
+  }
 }
 
 //---------------------------------------------------------------------------------
@@ -77,7 +86,7 @@ uint32_t Bitset::FirstUnsetBit( ) const
     }
   }
 
-  return -1;
+  return (uint32_t)-1;
 }
 
 //---------------------------------------------------------------------------------
@@ -99,5 +108,5 @@ uint32_t Bitset::GetNextSetBit( uint32_t current ) const
     }
   }
 
-  return -1;
+  return (uint32_t)-1;
 }

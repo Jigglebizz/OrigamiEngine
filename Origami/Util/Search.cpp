@@ -15,7 +15,7 @@ size_t BinarySearch32( uint32_t value, const void* buf, size_t stride, size_t le
   {
     if ( end == beginning )
     {
-      return -1;
+      return (size_t)-1;
     }
     
     if ( value < idx_value )

@@ -12,34 +12,65 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BasicGame", "BasicGame\Basi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Kami", "Kami\Kami.vcxproj", "{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Game", "Game", "{6974AD2D-103B-4FA1-9301-D8D32B295D7B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{F382BD9E-948A-4EFA-9F81-FBDC2A287881}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Builders", "Builders", "{C61F69C2-3D77-483B-AE98-C80134E68134}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Final|x64 = Final|x64
+		Final|x86 = Final|x86
 		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Debug|x64.ActiveCfg = Debug|x64
 		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Debug|x64.Build.0 = Debug|x64
+		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Debug|x86.ActiveCfg = Debug|Win32
+		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Debug|x86.Build.0 = Debug|Win32
 		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Final|x64.ActiveCfg = Final|x64
 		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Final|x64.Build.0 = Final|x64
+		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Final|x86.ActiveCfg = Final|Win32
+		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Final|x86.Build.0 = Final|Win32
 		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Release|x64.ActiveCfg = Release|x64
 		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Release|x64.Build.0 = Release|x64
+		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Release|x86.ActiveCfg = Release|Win32
+		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2}.Release|x86.Build.0 = Release|Win32
 		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Debug|x64.ActiveCfg = Debug|x64
 		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Debug|x64.Build.0 = Debug|x64
+		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Debug|x86.ActiveCfg = Debug|Win32
+		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Debug|x86.Build.0 = Debug|Win32
 		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Final|x64.ActiveCfg = Final|x64
 		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Final|x64.Build.0 = Final|x64
+		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Final|x86.ActiveCfg = Final|Win32
+		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Final|x86.Build.0 = Final|Win32
 		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Release|x64.ActiveCfg = Release|x64
 		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Release|x64.Build.0 = Release|x64
+		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Release|x86.ActiveCfg = Release|Win32
+		{E558FD4E-7679-4C77-8902-EBDCA825B463}.Release|x86.Build.0 = Release|Win32
 		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Debug|x64.ActiveCfg = Debug|x64
 		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Debug|x64.Build.0 = Debug|x64
+		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Debug|x86.ActiveCfg = Debug|Win32
+		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Debug|x86.Build.0 = Debug|Win32
 		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Final|x64.ActiveCfg = Final|x64
 		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Final|x64.Build.0 = Final|x64
+		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Final|x86.ActiveCfg = Final|x64
 		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Release|x64.ActiveCfg = Release|x64
 		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Release|x64.Build.0 = Release|x64
+		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Release|x86.ActiveCfg = Release|Win32
+		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0592D08A-15BC-4A10-8F32-9C9F6BE452D2} = {F382BD9E-948A-4EFA-9F81-FBDC2A287881}
+		{E558FD4E-7679-4C77-8902-EBDCA825B463} = {6974AD2D-103B-4FA1-9301-D8D32B295D7B}
+		{AD75CE3D-FB7E-4CC3-8FFB-172EA5E83F1A} = {C61F69C2-3D77-483B-AE98-C80134E68134}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F138EDD-B0CE-4162-996A-8967BAC12CFC}

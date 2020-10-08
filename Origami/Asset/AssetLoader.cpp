@@ -1,5 +1,5 @@
 #include "Origami/pch.h"
-#include "AssetLoader.h"
+#include "Origami/Asset/AssetLoader.h"
 
 #include <fstream>
 #include <direct.h>
@@ -7,9 +7,6 @@
 #include "Origami/Util/StringUtil.h"
 #include "Origami/Util/Log.h"
 
-constexpr uint32_t kMaxPathLen = 128;
-
-DISABLE_OPTS
 
 //---------------------------------------------------------------------------------
 char* AssetLoader::Load( const char* asset_name )
@@ -57,27 +54,28 @@ const char* GetAssetsBasePath()
   const char PATH_SEP = '/';
 #endif
 
-  static char base_path[ kMaxPathLen ];
+  static char base_path[ AssetLoader::kMaxPathLen ];
 
   if ( *base_path == 0 )
   {
-    char* cwd_path = _getcwd( NULL, kMaxPathLen );
-    //snprintf(base_path, kMaxPathLen, "%s", .c_str() );
+    char* cwd_path = _getcwd( NULL, AssetLoader::kMaxPathLen );
 
-    const char* project_dir_name = "Origami";
-    char* project_folder_start   = strstr( cwd_path, project_dir_name );
-
-    if ( project_folder_start == nullptr )
+    if ( cwd_path )
     {
-      Log::LogError( "Broken folder structure!" );
-      return "";
+      const char* project_dir_name = "Origami";
+      char* project_folder_start   = strstr( cwd_path, project_dir_name );
+      
+      if ( project_folder_start == nullptr )
+      {
+        Log::LogError( "Broken folder structure!" );
+        return "";
+      }
+
+      project_folder_start[ StrLen( project_dir_name ) + 1 ] = 0;
+
+      snprintf( base_path, AssetLoader::kMaxPathLen, "%s%s", cwd_path, "Assets" );
+      free( cwd_path );
     }
-
-    project_folder_start[ StrLen( project_dir_name ) + 1 ] = 0;
-
-    // strcpy_s( base_path, base_path );
-
-    snprintf( base_path, kMaxPathLen, "%s%s", cwd_path, "Assets" );
   }
   return base_path;
 }

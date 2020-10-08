@@ -26,7 +26,7 @@ void Render::InitRenderCon()
     con->m_Textures[ i_tex ].Init();
     if (i_tex != kMaxTextures - 1)
     {
-      con->m_Textures[i_tex].m_Next = i_tex + 1;
+      con->m_Textures[ i_tex ].m_Next = i_tex + 1;
     }
   }
 }
@@ -36,10 +36,8 @@ void Render::TextureInfo::Init()
 {
   m_SdlTex = nullptr;
   m_Asset  = nullptr;
-  m_X      = 0;
-  m_Y      = 0;
-  m_Width  = 0;
-  m_Height = 0;
+  MemZero( &m_ImageRect,  sizeof( m_ImageRect ) );
+  MemZero( &m_ScreenRect, sizeof( m_ScreenRect ) );
   m_Next   = kTexturesEnd;
   m_Prev   = kTexturesEnd;
 }
@@ -118,16 +116,13 @@ Render::TexHandle Render::AllocTex( void* data_header, uint32_t layer )
 {
   RenderCon* con = &s_RenderCon;
   TextureInfo* tex_info = &con->m_Textures[con->m_TextureHead];
-  tex_info->m_Layer = layer;
-  tex_info->m_X = 0;
-  tex_info->m_Y = 0;
 
   TextureAsset* tex_asset = (TextureAsset*)data_header;
-  tex_info->m_Asset = tex_asset;
+  int width, height;
 
   constexpr int sdl_format = STBI_rgb_alpha;
   int orig_format;
-  unsigned char* pixel_data = stbi_load_from_memory( (uint8_t*)tex_asset->m_Data, (int)tex_asset->m_DataLength, &tex_info->m_Width, &tex_info->m_Height, &orig_format, sdl_format );
+  unsigned char* pixel_data = stbi_load_from_memory( (uint8_t*)tex_asset->m_Data, (int)tex_asset->m_DataLength, &width, &height, &orig_format, sdl_format );
 
   if ( pixel_data == nullptr )
   {
@@ -135,21 +130,33 @@ Render::TexHandle Render::AllocTex( void* data_header, uint32_t layer )
     return kInvalidTexHandle;
   }
 
-  SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormatFrom( (void*)pixel_data, tex_info->m_Width, tex_info->m_Height, 32, 4 * tex_info->m_Width, SDL_PIXELFORMAT_RGBA32 );
+  SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormatFrom( (void*)pixel_data, width, height, 32, 4 * width, SDL_PIXELFORMAT_RGBA32 );
   if ( surf == nullptr )
   {
     Log::LogError( "Creating surface failed for %s: %s", tex_asset->m_Name, SDL_GetError() );
     return kInvalidTexHandle;
   }
 
-  tex_info->m_SdlTex = SDL_CreateTextureFromSurface( con->m_Renderer, surf );
+  SDL_Texture* sdl_tex = SDL_CreateTextureFromSurface( con->m_Renderer, surf );
   SDL_FreeSurface( surf );
   stbi_image_free( pixel_data );
-  if ( tex_info == nullptr )
+  if ( sdl_tex == nullptr )
   {
     Log::LogError( "Creating texture from surface %s error: %s", tex_asset->m_Name, SDL_GetError() );
     return kInvalidTexHandle;
   }
+
+  tex_info->m_Asset        = tex_asset;
+  tex_info->m_SdlTex       = sdl_tex;
+  tex_info->m_Layer        = layer;
+  tex_info->m_ImageRect.x  = 0;
+  tex_info->m_ImageRect.y  = 0;
+  tex_info->m_ImageRect.w  = width;
+  tex_info->m_ImageRect.h  = height;
+  tex_info->m_ScreenRect.x = 0;
+  tex_info->m_ScreenRect.y = 0;
+  tex_info->m_ScreenRect.w = width;
+  tex_info->m_ScreenRect.h = height;
 
   con->m_TextureCount++;
   TexHandle handle = con->m_TextureHead;
@@ -212,10 +219,19 @@ void Render::SetTexPosition( TexHandle tex_handle, int x, int y )
 {
   RenderCon*   con = &s_RenderCon;
   TextureInfo* tex = &con->m_Textures[ tex_handle ];
-  tex->m_X = x;
-  tex->m_Y = y;
+  tex->m_ScreenRect.x = x;
+  tex->m_ScreenRect.y = y;
 }
 
+//---------------------------------------------------------------------------------
+void Render::SetTexImageRect( TexHandle tex_handle, RectInt rect )
+{
+  RenderCon*   con = &s_RenderCon;
+  TextureInfo* tex = &con->m_Textures[ tex_handle ];
+  tex->m_ImageRect = rect;
+  tex->m_ScreenRect.w = rect.w;
+  tex->m_ScreenRect.h = rect.h;
+}
 
 //---------------------------------------------------------------------------------
 void Render::Draw()
@@ -229,13 +245,8 @@ void Render::Draw()
     while ( layer_tex_idx != kLayerEnd )
     {
       TextureInfo* tex_info = &con->m_Textures[ layer_tex_idx ];
-      
-      SDL_Rect tex_rect;
-      tex_rect.x = tex_info->m_X;
-      tex_rect.y = tex_info->m_Y;
-      tex_rect.w = tex_info->m_Width;
-      tex_rect.h = tex_info->m_Height;
-      SDL_RenderCopy( con->m_Renderer, tex_info->m_SdlTex, nullptr, &tex_rect );
+
+      SDL_RenderCopy( con->m_Renderer, tex_info->m_SdlTex, (SDL_Rect*)&tex_info->m_ImageRect, (SDL_Rect*)&tex_info->m_ScreenRect );
 
       layer_tex_idx = tex_info->m_Next;
     }

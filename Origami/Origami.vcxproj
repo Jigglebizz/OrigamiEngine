@@ -59,30 +59,32 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir);C:\sdk\SDL2-2.0.12\include;C:\sdk\stb;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);C:\sdk\SDL2-2.0.12\include;C:\sdk\stb;C:\rapidjson;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)Output\int\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir);C:\sdk\SDL2-2.0.12\include;C:\sdk\stb;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);C:\sdk\SDL2-2.0.12\include;C:\sdk\stb;C:\rapidjson;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)Output\int\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir);C:\sdk\SDL2-2.0.12\include;C:\sdk\stb;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);C:\sdk\SDL2-2.0.12\include;C:\sdk\stb;C:\rapidjson;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)Output\int\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Origami/pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>Default</LanguageStandard>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -95,7 +97,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -103,6 +105,8 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Origami/pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>Default</LanguageStandard>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -117,7 +121,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -125,6 +129,8 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Origami/pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>Default</LanguageStandard>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -138,10 +144,13 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Actor\Actor.h" />
     <ClInclude Include="Asset\AssetLoader.h" />
     <ClInclude Include="Concurrency\Thread.h" />
+    <ClInclude Include="Math\Primitives.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Render\Render.h" />
+    <ClInclude Include="Render\SpriteComponent.h" />
     <ClInclude Include="Util\FloatUtil.h" />
     <ClInclude Include="Util\Hash.h" />
     <ClInclude Include="Util\Log.h" />
@@ -151,6 +160,7 @@
     <ClInclude Include="Util\StringUtil.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Actor\Actor.cpp" />
     <ClCompile Include="Asset\AssetLoader.cpp" />
     <ClCompile Include="Concurrency\Thread.cpp" />
     <ClCompile Include="pch.cpp">
@@ -159,6 +169,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Render\Render.cpp" />
+    <ClCompile Include="Render\SpriteComponent.cpp" />
     <ClCompile Include="Util\Hash.cpp" />
     <ClCompile Include="Util\Log.cpp" />
     <ClCompile Include="Util\Memory.cpp" />

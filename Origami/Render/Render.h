@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SDL.h"
+#include "Origami/Math/Primitives.h"
 
 namespace Render
 {
@@ -13,9 +14,11 @@ namespace Render
   static constexpr TexHandle kInvalidTexHandle = 0;
 
   //---------------------------------------------------------------------------------
-  TexHandle ENGINE_API AllocTex       ( void* data_header, uint32_t layer = 0);
-  void      ENGINE_API FreeTex        ( TexHandle handle );
-  void      ENGINE_API SetTexPosition ( TexHandle handle, int x, int y );
+  TexHandle ENGINE_API AllocTex        ( void* data_header, uint32_t layer = 0);
+  void      ENGINE_API FreeTex         ( TexHandle handle );
+
+  void      ENGINE_API SetTexPosition  ( TexHandle tex_handle, int x, int y );
+  void      ENGINE_API SetTexImageRect ( TexHandle tex_handle, RectInt rect );
 
   //---------------------------------------------------------------------------------
   struct TextureAsset
@@ -34,10 +37,8 @@ namespace Render
     SDL_Texture*  m_SdlTex;
     TextureAsset* m_Asset;
     int           m_Layer;
-    int           m_X;
-    int           m_Y;
-    int           m_Width;
-    int           m_Height;
+    RectInt       m_ImageRect;
+    RectInt       m_ScreenRect;
 
     // Layers are arranged as linked lists
     uint16_t m_Next;
