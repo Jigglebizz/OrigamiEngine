@@ -4,6 +4,8 @@
 #include "Origami/Math/Primitives.h"
 #include "Origami/Render/Render.h"
 
+#include "Origami/Actor/BaseComponent.h"
+
 namespace Render
 {
   //---------------------------------------------------------------------------------
@@ -16,13 +18,13 @@ namespace Render
   };
 
   //---------------------------------------------------------------------------------
-  class SpriteComponent
+  class SpriteComponent : public BaseComponent
   {
   public:
-    void Init( SpriteComponentInitProperties* init_props );
+    void Init( ActorBase* actor, SpriteComponentInitProperties* init_props );
     void Destroy();
 
-    void UpdateFirst( float dt );
+    void UpdateLast( float dt );
 
   private:
     Render::TexHandle m_TexHandle;

@@ -14,6 +14,7 @@ static float constexpr kFpsTarget = 24.f;
 static float constexpr kFrameTime = 1000.f / kFpsTarget;
 
 BaseCharacter s_BaseChar;
+Vec2          s_Pos;
 
 //---------------------------------------------------------------------------------
 void LogFunction( uint8_t flags, const char* fmt, va_list args )
@@ -26,9 +27,10 @@ void LogFunction( uint8_t flags, const char* fmt, va_list args )
 void Init()
 {
   Log::RegisterCallback(LogFunction);
-  Render::Init();
+  Render::Init( "Origami Test" );
 
   s_BaseChar.Init();
+  s_Pos = { 0,0 };
 }
 
 //---------------------------------------------------------------------------------
@@ -45,6 +47,18 @@ void UpdateMiddle( float dt )
 {
   UNREFERENCED_PARAMETER( dt );
   s_BaseChar.UpdateMiddle( dt );
+
+  s_BaseChar.SetPosition( &s_Pos );
+  s_Pos.x += dt * 0.1f;
+  s_Pos.y += dt * 0.12f;
+  if (s_Pos.x > 400)
+  {
+    s_Pos.x -= 400;
+  }
+  if (s_Pos.y > 300)
+  {
+    s_Pos.y -= 300;
+  }
 }
 
 //---------------------------------------------------------------------------------
@@ -69,12 +83,6 @@ int main( int argc, char* argv[] )
   using namespace std::chrono;
 
   Init();
-
-  //char* test_asset_data = AssetLoader::Load( "test.bmp" );
-  //Render::TexHandle test_asset_handle = Render::AllocTex( test_asset_data );
-
-  //char* test_sprite_data = AssetLoader::Load( "smallsprite.png" );
-  //Render::TexHandle sprite_handle = Render::AllocTex( test_sprite_data );
 
   SDL_Event evt;
 

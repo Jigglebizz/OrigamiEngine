@@ -11,7 +11,7 @@ void BaseCharacter::Init()
   sprite_init_props.m_FrameStride = 8;
   sprite_init_props.m_Layer = 0;
 
-  m_SpriteComponent.Init( &sprite_init_props );
+  m_SpriteComponent.Init( this, &sprite_init_props );
 }
 
 void BaseCharacter::Destroy()

@@ -7,8 +7,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-DISABLE_OPTS
-
 //---------------------------------------------------------------------------------
 void Render::InitRenderCon()
 {
@@ -37,7 +35,9 @@ void Render::TextureInfo::Init()
   m_SdlTex = nullptr;
   m_Asset  = nullptr;
   MemZero( &m_ImageRect,  sizeof( m_ImageRect ) );
-  MemZero( &m_ScreenRect, sizeof( m_ScreenRect ) );
+  MemZero( &m_Position,   sizeof( m_Position  ) );
+  m_Scale.x = 1.f;
+  m_Scale.y = 1.f;
   m_Next   = kTexturesEnd;
   m_Prev   = kTexturesEnd;
 }
@@ -57,7 +57,7 @@ void Render::TextureInfo::Free()
 }
 
 //---------------------------------------------------------------------------------
-void Render::Init()
+void Render::Init( const char* window_title )
 {
   InitRenderCon();
 
@@ -70,7 +70,7 @@ void Render::Init()
 
   RenderCon* con = &s_RenderCon;
 
-  con->m_Window = SDL_CreateWindow("Hello World!", 100, 100, 640, 480, SDL_WINDOW_SHOWN );
+  con->m_Window = SDL_CreateWindow( window_title, 100, 100, 640, 480, SDL_WINDOW_SHOWN );
   if ( con->m_Window == nullptr )
   {
     Log::LogError("SDL_CreateWindow Error: %s\n", SDL_GetError() );
@@ -153,10 +153,6 @@ Render::TexHandle Render::AllocTex( void* data_header, uint32_t layer )
   tex_info->m_ImageRect.y  = 0;
   tex_info->m_ImageRect.w  = width;
   tex_info->m_ImageRect.h  = height;
-  tex_info->m_ScreenRect.x = 0;
-  tex_info->m_ScreenRect.y = 0;
-  tex_info->m_ScreenRect.w = width;
-  tex_info->m_ScreenRect.h = height;
 
   con->m_TextureCount++;
   TexHandle handle = con->m_TextureHead;
@@ -215,12 +211,11 @@ void Render::FreeTex( TexHandle tex_handle )
 }
 
 //---------------------------------------------------------------------------------
-void Render::SetTexPosition( TexHandle tex_handle, int x, int y )
+void Render::SetTexPosition( TexHandle tex_handle, Vec2 pos )
 {
   RenderCon*   con = &s_RenderCon;
   TextureInfo* tex = &con->m_Textures[ tex_handle ];
-  tex->m_ScreenRect.x = x;
-  tex->m_ScreenRect.y = y;
+  tex->m_Position  = pos;
 }
 
 //---------------------------------------------------------------------------------
@@ -229,8 +224,20 @@ void Render::SetTexImageRect( TexHandle tex_handle, RectInt rect )
   RenderCon*   con = &s_RenderCon;
   TextureInfo* tex = &con->m_Textures[ tex_handle ];
   tex->m_ImageRect = rect;
-  tex->m_ScreenRect.w = rect.w;
-  tex->m_ScreenRect.h = rect.h;
+}
+
+//---------------------------------------------------------------------------------
+void Render::SetTexScale( TexHandle tex_handle, Vec2 scale )
+{
+  RenderCon*   con = &s_RenderCon;
+  TextureInfo* tex = &con->m_Textures[ tex_handle ];
+  tex->m_Scale     = scale;
+}
+
+//---------------------------------------------------------------------------------
+void  Render::SetTexScale( TexHandle tex_handle, float scale )
+{
+  SetTexScale( tex_handle, { scale, scale });
 }
 
 //---------------------------------------------------------------------------------
@@ -245,8 +252,13 @@ void Render::Draw()
     while ( layer_tex_idx != kLayerEnd )
     {
       TextureInfo* tex_info = &con->m_Textures[ layer_tex_idx ];
-
-      SDL_RenderCopy( con->m_Renderer, tex_info->m_SdlTex, (SDL_Rect*)&tex_info->m_ImageRect, (SDL_Rect*)&tex_info->m_ScreenRect );
+      SDL_FRect screen_rect;
+      screen_rect.x = tex_info->m_Position.x;
+      screen_rect.y = tex_info->m_Position.y;
+      screen_rect.w = tex_info->m_ImageRect.w * tex_info->m_Scale.x;
+      screen_rect.h = tex_info->m_ImageRect.h * tex_info->m_Scale.y;
+      
+      SDL_RenderCopyF( con->m_Renderer, tex_info->m_SdlTex, (SDL_Rect*)&tex_info->m_ImageRect, &screen_rect );
 
       layer_tex_idx = tex_info->m_Next;
     }

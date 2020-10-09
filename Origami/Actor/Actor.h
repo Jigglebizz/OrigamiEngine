@@ -16,7 +16,9 @@ public:
   virtual void UpdateLast  ( float dt );
   virtual void Destroy();
 
-  inline  Vec2 GetPosition() const;
+  inline  Vec2 GetPosition () const;
+  inline  void SetPosition ( const Vec2* pos );
 };
 
-Vec2 ActorBase::GetPosition() const { return m_Position; }
+Vec2 ActorBase::GetPosition() const            { return m_Position; }
+void ActorBase::SetPosition( const Vec2* pos ) { m_Position = *pos; }

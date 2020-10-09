@@ -2,8 +2,10 @@
 #include "Origami/Render/SpriteComponent.h"
 
 //---------------------------------------------------------------------------------
-void Render::SpriteComponent::Init( SpriteComponentInitProperties* init_props )
+void Render::SpriteComponent::Init( ActorBase* actor, SpriteComponentInitProperties* init_props )
 {
+  BaseComponent::Init( actor );
+
   m_TexHandle = 0;
   m_FrameIdx  = 0;
 
@@ -29,12 +31,11 @@ void Render::SpriteComponent::Destroy()
 }
 
 //---------------------------------------------------------------------------------
-void Render::SpriteComponent::UpdateFirst( float dt )
+void Render::SpriteComponent::UpdateLast( float dt )
 {
   UNREFERENCED_PARAMETER( dt );
-  // TODO: Temporary to test animation
-  m_FrameIdx = ( m_FrameIdx + 1 ) % 40;
-  Render::SetTexImageRect(m_TexHandle, MakeImageRect());
+  Render::SetTexImageRect( m_TexHandle, MakeImageRect() );
+  Render::SetTexPosition(  m_TexHandle, GetActor()->GetPosition() );
 }
 
 //---------------------------------------------------------------------------------

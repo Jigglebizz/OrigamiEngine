@@ -145,6 +145,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Actor\Actor.h" />
+    <ClInclude Include="Actor\BaseComponent.h" />
     <ClInclude Include="Asset\AssetLoader.h" />
     <ClInclude Include="Concurrency\Thread.h" />
     <ClInclude Include="Math\Primitives.h" />
@@ -161,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Actor\Actor.cpp" />
+    <ClCompile Include="Actor\BaseComponent.cpp" />
     <ClCompile Include="Asset\AssetLoader.cpp" />
     <ClCompile Include="Concurrency\Thread.cpp" />
     <ClCompile Include="pch.cpp">

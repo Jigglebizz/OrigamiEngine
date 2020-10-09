@@ -6,7 +6,7 @@
 namespace Render
 {
   //---------------------------------------------------------------------------------
-  void ENGINE_API Init();
+  void ENGINE_API Init( const char* window_title );
   void ENGINE_API Destroy();
   void ENGINE_API Draw();
 
@@ -17,8 +17,10 @@ namespace Render
   TexHandle ENGINE_API AllocTex        ( void* data_header, uint32_t layer = 0);
   void      ENGINE_API FreeTex         ( TexHandle handle );
 
-  void      ENGINE_API SetTexPosition  ( TexHandle tex_handle, int x, int y );
+  void      ENGINE_API SetTexPosition  ( TexHandle tex_handle, Vec2 pos     );
   void      ENGINE_API SetTexImageRect ( TexHandle tex_handle, RectInt rect );
+  void      ENGINE_API SetTexScale     ( TexHandle tex_handle, Vec2 scale   );
+  void      ENGINE_API SetTexScale     ( TexHandle tex_handle, float scale  );
 
   //---------------------------------------------------------------------------------
   struct TextureAsset
@@ -38,7 +40,8 @@ namespace Render
     TextureAsset* m_Asset;
     int           m_Layer;
     RectInt       m_ImageRect;
-    RectInt       m_ScreenRect;
+    Vec2          m_Position;
+    Vec2          m_Scale;
 
     // Layers are arranged as linked lists
     uint16_t m_Next;
