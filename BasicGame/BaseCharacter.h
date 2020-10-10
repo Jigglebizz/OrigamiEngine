@@ -9,6 +9,6 @@ class BaseCharacter : public ActorBase
 
 public:
   void Init() override;
-  void UpdateFirst( float dt );
+  void UpdateLast( float dt );
   void Destroy() override;
 };

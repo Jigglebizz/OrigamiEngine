@@ -4,10 +4,13 @@
 #include <chrono>
 
 #include "Origami/Util/Log.h"
+#include "Origami/Anim/Anim.h"
 #include "Origami/Render/Render.h"
 #include "Origami/Asset/AssetLoader.h"
 
 #include "BaseCharacter.h"
+
+DISABLE_OPTS
 
 //---------------------------------------------------------------------------------
 static float constexpr kFpsTarget = 24.f;
@@ -28,6 +31,7 @@ void Init()
 {
   Log::RegisterCallback(LogFunction);
   Render::Init( "Origami Test" );
+  Anim::Init();
 
   s_BaseChar.Init();
   s_Pos = { 0,0 };
@@ -38,6 +42,7 @@ void UpdateFirst( float dt )
 {
   UNREFERENCED_PARAMETER( dt );
   Render::Draw();
+  Anim::Update();
 
   s_BaseChar.UpdateFirst( dt );
 }
@@ -71,6 +76,7 @@ void UpdateLast( float dt )
 //---------------------------------------------------------------------------------
 void Destroy()
 {
+  Anim::Destroy();
   Render::Destroy();
 }
 

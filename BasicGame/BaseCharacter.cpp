@@ -19,7 +19,7 @@ void BaseCharacter::Destroy()
   m_SpriteComponent.Destroy();
 }
 
-void BaseCharacter::UpdateFirst( float dt )
+void BaseCharacter::UpdateLast(float dt)
 {
-  m_SpriteComponent.UpdateFirst( dt );
+  m_SpriteComponent.UpdateLast(dt);
 }
