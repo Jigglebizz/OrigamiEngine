@@ -5,6 +5,7 @@
 
 #include "Origami/Util/Log.h"
 #include "Origami/Anim/Anim.h"
+#include "Origami/Input/Input.h"
 #include "Origami/Render/Render.h"
 #include "Origami/Asset/AssetLoader.h"
 
@@ -15,6 +16,7 @@ DISABLE_OPTS
 //---------------------------------------------------------------------------------
 static float constexpr kFpsTarget = 24.f;
 static float constexpr kFrameTime = 1000.f / kFpsTarget;
+static float g_Time = 0.f;
 
 BaseCharacter s_BaseChar;
 Vec2          s_Pos;
@@ -23,6 +25,8 @@ Vec2          s_Pos;
 void LogFunction( uint8_t flags, const char* fmt, va_list args )
 {
   UNREFERENCED_PARAMETER( flags );
+  Log::Timestamp ts = Log::MsToTimestamp( g_Time );
+  printf("[%d:%02d:%02d:%03d]", ts.h, ts.m, ts.s, ts.ms );
   vprintf( fmt, args );
 }
 
@@ -32,6 +36,7 @@ void Init()
   Log::RegisterCallback(LogFunction);
   Render::Init( "Origami Test" );
   Anim::Init();
+  Input::Init();
 
   s_BaseChar.Init();
   s_Pos = { 0,0 };
@@ -42,6 +47,7 @@ void UpdateFirst( float dt )
 {
   UNREFERENCED_PARAMETER( dt );
   Render::Draw();
+  Input::Update();
   Anim::Update();
 
   s_BaseChar.UpdateFirst( dt );
@@ -90,16 +96,17 @@ int main( int argc, char* argv[] )
 
   Init();
 
-  SDL_Event evt;
-
   float frame_accum_dt = 0;
   steady_clock::time_point time = steady_clock::now();
   while (1)
   {
-    SDL_PollEvent( &evt );
-
-    float dt = (float)duration_cast<nanoseconds>( steady_clock::now() - time ).count() / 1000000.f;
+    Input::EventPump();
+    steady_clock::time_point new_time = steady_clock::now();
+    float dt = (float)duration_cast<nanoseconds>( new_time - time ).count() / 1000000.f;
+    time = new_time;
     frame_accum_dt += dt;
+    g_Time += dt;
+
 
     if ( frame_accum_dt >= kFrameTime )
     {
@@ -110,7 +117,6 @@ int main( int argc, char* argv[] )
       frame_accum_dt -= kFrameTime;
     }
 
-    time = steady_clock::now();
   }
 
   Destroy();

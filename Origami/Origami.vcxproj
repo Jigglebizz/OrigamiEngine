@@ -149,7 +149,9 @@
     <ClInclude Include="Anim\Anim.h" />
     <ClInclude Include="Anim\AnimComponent.h" />
     <ClInclude Include="Asset\AssetLoader.h" />
+    <ClInclude Include="Command\Command.h" />
     <ClInclude Include="Concurrency\Thread.h" />
+    <ClInclude Include="Input\Input.h" />
     <ClInclude Include="Math\Primitives.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Render\Render.h" />
@@ -169,6 +171,7 @@
     <ClCompile Include="Anim\AnimComponent.cpp" />
     <ClCompile Include="Asset\AssetLoader.cpp" />
     <ClCompile Include="Concurrency\Thread.cpp" />
+    <ClCompile Include="Input\Input.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Final|x64'">Create</PrecompiledHeader>

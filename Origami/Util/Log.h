@@ -16,4 +16,11 @@ namespace Log
   void ENGINE_API RegisterCallback( LogCallbackFunction callback );
   void ENGINE_API LogInfo( const char* fmt, ... );
   void ENGINE_API LogError( const char* fmt, ...);
+
+  //---------------------------------------------------------------------------------
+  struct Timestamp
+  {
+    int h, m, s, ms;
+  };
+  Timestamp ENGINE_API MsToTimestamp( float ms );
 }

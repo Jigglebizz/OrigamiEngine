@@ -39,3 +39,16 @@ void Log::LogError( const char* fmt, ... )
   }
 #endif
 }
+
+//---------------------------------------------------------------------------------
+Log::Timestamp Log::MsToTimestamp( float ms )
+{
+  Timestamp ts;
+  ts.ms = (int)ms % 1000;
+  int total_s = (int)ms / 1000;
+  ts.s = total_s % 60;
+  ts.m = total_s / 60;
+  ts.h = total_s / 60 / 60;
+
+  return ts;
+}

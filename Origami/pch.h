@@ -39,7 +39,7 @@ static_assert(true, "Unrecognized configuration");
 #endif
 
 #if ( BUILD < BUILD_FINAL )
-  #define ASSERT_MSG( exp, message ) if ( !exp ) assert( message );
+  #define ASSERT_MSG( exp, message ) if ( ( exp ) == 0 ) assert( message );
 #else
   #define ASSERT_MSG( exp, message )
 #endif
