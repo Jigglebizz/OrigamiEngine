@@ -15,4 +15,5 @@ void BaseCharacter::Init()
 
   AddComponent<Render::SpriteComponent>( &sprite_init_props );
   AddComponent<TestMovementComponent>();
+  //AddComponent<TestMovementComponent>();
 }

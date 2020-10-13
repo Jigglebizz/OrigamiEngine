@@ -68,6 +68,8 @@ uint64_t ActorBase::GetId() const
   return m_Id;
 }
 
+DISABLE_OPTS
+
 //---------------------------------------------------------------------------------
 template <class ComponentClass>
 void ActorBase::AddComponent( void* init_params )
@@ -77,7 +79,7 @@ void ActorBase::AddComponent( void* init_params )
   uint64_t id = ComponentClass::GetId();
 
   size_t existing_component = BinarySearch64( id, &m_Components, sizeof( ComponentInfo ), m_ComponentCount );
-  ASSERT_MSG( existing_component == (uint64_t)-1, "Attempting to add duplicate component to actor!" );
+  ASSERT_MSG( existing_component == 0xffffffffffffffff, "Attempting to add duplicate component to actor!" );
 
   ComponentInfo* new_info = &m_Components[ m_ComponentCount++ ];
   new_info->m_ComponentTypeId = id;

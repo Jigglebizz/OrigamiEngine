@@ -11,7 +11,7 @@ namespace Render
   void ENGINE_API Draw();
 
   using TexHandle = uint64_t;
-  static constexpr TexHandle kInvalidTexHandle = 0;
+  static constexpr TexHandle kInvalidTexHandle = (TexHandle)-1;
 
   //---------------------------------------------------------------------------------
   TexHandle ENGINE_API AllocTex        ( void* data_header, uint32_t layer = 0);

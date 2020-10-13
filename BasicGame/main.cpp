@@ -68,6 +68,8 @@ int main( int argc, char* argv[] )
 
   Game::Run();
 
+  return 0;
+
   /*using namespace std::chrono;
 
   Init();

@@ -9,6 +9,20 @@
 
 #define NOMINMAX
 
+#define BUILD_DEBUG   0
+#define BUILD_RELEASE 1
+#define BUILD_FINAL   2
+
+#if defined _DEBUG
+#define BUILD BUILD_DEBUG
+#elif defined _RELEASE
+#define BUILD BUILD_RELEASE
+#elif defined _FINAL
+#define BUILD BUILD_FINAL
+#else
+static_assert(true, "Unrecognized configuration");
+#endif
+
 #include <windows.h>
 #include <cassert>
 #include <stdint.h>
@@ -24,27 +38,14 @@
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
-#define BUILD_DEBUG   0
-#define BUILD_RELEASE 1
-#define BUILD_FINAL   2
-
-#if defined _DEBUG
-#define BUILD BUILD_DEBUG
-#elif defined _RELEASE
-#define BUILD BUILD_RELEASE
-#elif defined _FINAL
-#define BUILD BUILD_FINAL
-#else
-static_assert(true, "Unrecognized configuration");
-#endif
-
 #if ( BUILD < BUILD_FINAL )
-  #define ASSERT_MSG( exp, message ) if ( ( exp ) == 0 ) assert( message );
+  #define ASSERT_MSG( exp, message ) if ( ( exp ) == 0 ) __debugbreak();
 #else
   #define ASSERT_MSG( exp, message )
 #endif
 
-#include "Util/Memory.h"
+#include "Origami/Util/Memory.h"
+#include "Origami/Util/Hash.h"
 
 
 
