@@ -1,6 +1,8 @@
 #include "Origami/pch.h"
 #include "BaseCharacter.h"
 
+#include "TestMovementComponent.h"
+
 void BaseCharacter::Init()
 {
   Render::SpriteComponentInitProperties sprite_init_props;
@@ -11,15 +13,6 @@ void BaseCharacter::Init()
   sprite_init_props.m_FrameStride = 8;
   sprite_init_props.m_Layer = 0;
 
-  m_SpriteComponent.Init( this, &sprite_init_props );
-}
-
-void BaseCharacter::Destroy()
-{
-  m_SpriteComponent.Destroy();
-}
-
-void BaseCharacter::UpdateLast(float dt)
-{
-  m_SpriteComponent.UpdateLast(dt);
+  AddComponent<Render::SpriteComponent>( &sprite_init_props );
+  AddComponent<TestMovementComponent>();
 }

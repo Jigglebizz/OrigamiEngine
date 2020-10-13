@@ -2,11 +2,11 @@
 #include "Origami/Anim/AnimComponent.h"
 
 //---------------------------------------------------------------------------------
-void Anim::AnimComponent::Init( ActorBase* actor, AnimComponentInitProperties* init_props )
+void Anim::AnimComponent::Init( ActorBase* actor, void* init_props )
 {
   UNREFERENCED_PARAMETER( init_props );
 
-  BaseComponent::Init( actor );
+  BaseInit( actor );
 }
 
 //---------------------------------------------------------------------------------

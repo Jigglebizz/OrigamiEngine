@@ -1,90 +1,60 @@
 #include "Origami/pch.h"
 
-#include <stdio.h>
-#include <chrono>
+#include "Origami/Game/Game.h"
+#include "Origami/Actor/ActorSystem.h"
 
-#include "Origami/Util/Log.h"
-#include "Origami/Anim/Anim.h"
-#include "Origami/Input/Input.h"
-#include "Origami/Render/Render.h"
-#include "Origami/Asset/AssetLoader.h"
 
 #include "BaseCharacter.h"
 
-DISABLE_OPTS
 
 //---------------------------------------------------------------------------------
-static float constexpr kFpsTarget = 24.f;
-static float constexpr kFrameTime = 1000.f / kFpsTarget;
-static float g_Time = 0.f;
 
 BaseCharacter s_BaseChar;
 Vec2          s_Pos;
 
-//---------------------------------------------------------------------------------
-void LogFunction( uint8_t flags, const char* fmt, va_list args )
-{
-  UNREFERENCED_PARAMETER( flags );
-  Log::Timestamp ts = Log::MsToTimestamp( g_Time );
-  printf("[%d:%02d:%02d:%03d]", ts.h, ts.m, ts.s, ts.ms );
-  vprintf( fmt, args );
-}
+
 
 //---------------------------------------------------------------------------------
-void Init()
-{
-  Log::RegisterCallback(LogFunction);
-  Render::Init( "Origami Test" );
-  Anim::Init();
-  Input::Init();
-
-  s_BaseChar.Init();
-  s_Pos = { 0,0 };
-}
+//void Init()
+//{
+//
+//
+//  s_BaseChar.Init();
+//  s_Pos = { 0,0 };
+//}
 
 //---------------------------------------------------------------------------------
-void UpdateFirst( float dt )
-{
-  UNREFERENCED_PARAMETER( dt );
-  Render::Draw();
-  Input::Update();
-  Anim::Update();
+//void UpdateFirst( float dt )
+//{
+//  s_BaseChar.UpdateFirst( dt );
+//}
+//
+////---------------------------------------------------------------------------------
+//void UpdateMiddle( float dt )
+//{
+//  UNREFERENCED_PARAMETER( dt );
+//  s_BaseChar.UpdateMiddle( dt );
+//
+//  s_BaseChar.SetPosition( &s_Pos );
+//  s_Pos.x += dt * 0.1f;
+//  s_Pos.y += dt * 0.12f;
+//  if (s_Pos.x > 400)
+//  {
+//    s_Pos.x -= 400;
+//  }
+//  if (s_Pos.y > 300)
+//  {
+//    s_Pos.y -= 300;
+//  }
+//}
+//
+////---------------------------------------------------------------------------------
+//void UpdateLast( float dt )
+//{
+//  UNREFERENCED_PARAMETER( dt );
+//  s_BaseChar.UpdateLast( dt );
+//}
 
-  s_BaseChar.UpdateFirst( dt );
-}
-
-//---------------------------------------------------------------------------------
-void UpdateMiddle( float dt )
-{
-  UNREFERENCED_PARAMETER( dt );
-  s_BaseChar.UpdateMiddle( dt );
-
-  s_BaseChar.SetPosition( &s_Pos );
-  s_Pos.x += dt * 0.1f;
-  s_Pos.y += dt * 0.12f;
-  if (s_Pos.x > 400)
-  {
-    s_Pos.x -= 400;
-  }
-  if (s_Pos.y > 300)
-  {
-    s_Pos.y -= 300;
-  }
-}
-
-//---------------------------------------------------------------------------------
-void UpdateLast( float dt )
-{
-  UNREFERENCED_PARAMETER( dt );
-  s_BaseChar.UpdateLast( dt );
-}
-
-//---------------------------------------------------------------------------------
-void Destroy()
-{
-  Anim::Destroy();
-  Render::Destroy();
-}
 
 //---------------------------------------------------------------------------------
 int main( int argc, char* argv[] )
@@ -92,7 +62,13 @@ int main( int argc, char* argv[] )
   UNREFERENCED_PARAMETER( argc );
   UNREFERENCED_PARAMETER( argv );
 
-  using namespace std::chrono;
+  Game::Init( "Origami test" );
+
+  Actor::AddActor( &s_BaseChar );
+
+  Game::Run();
+
+  /*using namespace std::chrono;
 
   Init();
 
@@ -120,5 +96,5 @@ int main( int argc, char* argv[] )
   }
 
   Destroy();
-  return 0;
+  return 0;*/
 }

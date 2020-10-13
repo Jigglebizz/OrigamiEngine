@@ -2,20 +2,22 @@
 #include "Origami/Render/SpriteComponent.h"
 
 //---------------------------------------------------------------------------------
-void Render::SpriteComponent::Init( ActorBase* actor, SpriteComponentInitProperties* init_props )
+void Render::SpriteComponent::Init( ActorBase* actor, void* init_props )
 {
-  BaseComponent::Init( actor );
+  BaseInit( actor );
+
+  SpriteComponentInitProperties* sprite_init_props = (SpriteComponentInitProperties*)init_props;
 
   m_TexHandle = 0;
   m_FrameIdx  = 0;
 
-  m_FrameSize   = init_props->m_FrameSize;
-  m_FrameStride = init_props->m_FrameStride;
+  m_FrameSize   = sprite_init_props->m_FrameSize;
+  m_FrameStride = sprite_init_props->m_FrameStride;
 
-  char* sprite_data = AssetLoader::Load( init_props->m_TextureAssetPath );
+  char* sprite_data = AssetLoader::Load( sprite_init_props->m_TextureAssetPath );
   ASSERT_MSG( sprite_data, "Sprite data was not loaded" );
 
-  m_TexHandle = Render::AllocTex( sprite_data, init_props->m_Layer );
+  m_TexHandle = Render::AllocTex( sprite_data, sprite_init_props->m_Layer );
 
   ASSERT_MSG( m_TexHandle != kInvalidTexHandle, "Sprite got inalid tex handle" );
   Render::SetTexImageRect( m_TexHandle, MakeImageRect() );

@@ -4,14 +4,9 @@
 
 namespace Anim
 {
-  struct AnimComponent : public BaseComponent
-  {
-    struct AnimComponentInitProperties
-    {
+  DECLARE_COMPONENT_START( AnimComponent )
 
-    };
-
-    void Init( ActorBase* actor, AnimComponentInitProperties* init_props );
-    void UpdateMiddle( float dt );
-  };
+    void Init          ( ActorBase* actor, void* init_props ) override;
+    void UpdateMiddle  ( float dt )                           override;
+  DECLARE_COMPONENT_END
 }

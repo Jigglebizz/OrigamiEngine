@@ -16,15 +16,16 @@ void Swap( uint8_t* A, uint8_t* B, size_t width )
 }
 
 //---------------------------------------------------------------------------------
-size_t QuicksortPivot32( void* buf, size_t stride, size_t len )
+template< typename UIntT >
+size_t QuicksortPivot( void* buf, size_t stride, size_t len )
 {
   uint8_t* u8_buf   = (uint8_t*)buf;
   size_t   low_idx  = 0;
-  uint32_t pivot    = *(uint32_t*)&u8_buf[ (len - 1) * stride  ];
+  UIntT    pivot    = *(UIntT*)&u8_buf[ (len - 1) * stride  ];
 
   for ( size_t upper_idx = 0; upper_idx < len - 1; ++upper_idx)
   {
-    if ( *(uint32_t*)&u8_buf[ upper_idx * stride ] < pivot )
+    if ( *(UIntT*)&u8_buf[ upper_idx * stride ] < pivot )
     {
       Swap( &u8_buf[ low_idx * stride ], &u8_buf[ upper_idx * stride ], stride );
       low_idx++;
@@ -38,12 +39,25 @@ size_t QuicksortPivot32( void* buf, size_t stride, size_t len )
 //---------------------------------------------------------------------------------
 void QuickSort32(void* buf, size_t stride, size_t len)
 {
-  assert( stride >= sizeof(uint32_t) && "Cannot sort u32s if elements are smaller than u32" );
+  ASSERT_MSG( stride >= sizeof(uint32_t), "Cannot sort u32s if elements are smaller than u32" );
 
   if ( len > 0 )
   {
-    size_t pivot_point = QuicksortPivot32(buf, stride, len);
+    size_t pivot_point = QuicksortPivot<uint32_t>(buf, stride, len);
     QuickSort32( buf,                                                             stride, pivot_point           );
     QuickSort32( (void*)( (uint8_t*)buf + ( ( pivot_point + 1 ) * ( stride ) ) ), stride, len - pivot_point - 1 );
+  }
+}
+
+//---------------------------------------------------------------------------------
+void QuickSort64( void* buf, size_t stride, size_t len )
+{
+  ASSERT_MSG( stride >= sizeof( uint64_t ), "Cannot sort u64s if elements are smaller than u64" );
+
+  if ( len > 0 )
+  {
+    size_t pivot_point = QuicksortPivot<uint64_t>(buf, stride, len);
+    QuickSort64( buf, stride, pivot_point );
+    QuickSort64( (void*)( (uint8_t*)buf + ( ( pivot_point + 1 ) * ( stride ) ) ), stride, len - pivot_point - 1 );
   }
 }
