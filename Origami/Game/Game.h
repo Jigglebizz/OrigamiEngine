@@ -6,7 +6,8 @@
 
 #include <assert.h>
 
-static float g_Time = 0.f;
+static          float g_Time          = 0.f;
+static volatile bool  g_GameShouldRun = true; // volatile was required to get around 'unreachable code' warning
 
 namespace Game
 {

@@ -56,8 +56,6 @@ void Render::TextureInfo::Free()
   }
 }
 
-DISABLE_OPTS
-
 //---------------------------------------------------------------------------------
 void Render::Init( const char* window_title, const char* window_icon )
 {

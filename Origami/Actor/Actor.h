@@ -68,8 +68,6 @@ uint64_t ActorBase::GetId() const
   return m_Id;
 }
 
-DISABLE_OPTS
-
 //---------------------------------------------------------------------------------
 template <class ComponentClass>
 void ActorBase::AddComponent( void* init_params )

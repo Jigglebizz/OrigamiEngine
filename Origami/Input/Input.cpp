@@ -3,8 +3,7 @@
 
 #include "SDL.h"
 #include "Origami/Util/Log.h"
-
-DISABLE_OPTS
+#include "Origami/Game/Game.h"
 
 //---------------------------------------------------------------------------------
 void Input::Init()
@@ -36,6 +35,8 @@ void Input::EventPump()
     evt->m_ButtonId = sdl_evt.key.keysym.sym;
   }
   break;
+  case SDL_QUIT:
+    g_GameShouldRun = false;
   default:
     break;
   }

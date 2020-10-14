@@ -69,7 +69,7 @@ void Game::Run()
   using namespace std::chrono;
   steady_clock::time_point prev_time = steady_clock::now();
   float dt_accum = 0.f;
-  while ( 1 )
+  while ( g_GameShouldRun )
   {
     Input::EventPump();
     steady_clock::time_point current_time = steady_clock::now();
