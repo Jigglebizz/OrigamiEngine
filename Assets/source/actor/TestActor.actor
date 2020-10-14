@@ -1,0 +1,13 @@
+{
+  "Dependencies":
+  [
+    "texture/megaman.png"
+  ],
+  "Components":
+  [
+	"0x‭993878A0‬":
+	{
+	
+	}
+  ]
+}

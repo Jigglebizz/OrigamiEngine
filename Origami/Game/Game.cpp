@@ -26,11 +26,11 @@ void LogFunction( uint8_t flags, const char* fmt, va_list args )
 }
 
 //---------------------------------------------------------------------------------
-void Game::Init( const char* title )
+void Game::Init( const char* title, const char* window_icon )
 {
   Log::RegisterCallback(LogFunction);
   Actor::Init();
-  Render::Init( title );
+  Render::Init( title, window_icon );
   Anim::Init();
   Input::Init();
 }

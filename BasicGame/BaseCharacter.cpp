@@ -7,7 +7,7 @@ void BaseCharacter::Init()
 {
   Render::SpriteComponentInitProperties sprite_init_props;
   MemZero( &sprite_init_props, sizeof( sprite_init_props ) );
-  strcpy_s( sprite_init_props.m_TextureAssetPath, "megaman.png" );
+  strcpy_s( sprite_init_props.m_TextureAssetPath, "texture\\megaman.png" );
   sprite_init_props.m_FrameSize.x = 50;
   sprite_init_props.m_FrameSize.y = 49;
   sprite_init_props.m_FrameStride = 8;

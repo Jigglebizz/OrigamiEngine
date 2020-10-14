@@ -56,8 +56,10 @@ void Render::TextureInfo::Free()
   }
 }
 
+DISABLE_OPTS
+
 //---------------------------------------------------------------------------------
-void Render::Init( const char* window_title )
+void Render::Init( const char* window_title, const char* window_icon )
 {
   InitRenderCon();
 
@@ -85,6 +87,35 @@ void Render::Init( const char* window_title )
     Destroy();
     return;
   }
+
+  // Load window icon
+  static constexpr char default_icon[] = "icon\\OrigamiIcon64.png";
+  char icon_full_path[ AssetLoader::kMaxPathLen ];
+  snprintf( icon_full_path, AssetLoader::kMaxPathLen, "%s\\%s", AssetLoader::GetAssetsSourcePath(), ( window_icon ) ? window_icon : default_icon );
+
+  int w, h, format;
+  unsigned char* pixel_data = stbi_load( icon_full_path, &w, &h, &format, STBI_rgb_alpha );
+
+  if ( pixel_data != nullptr )
+  {
+    SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormatFrom( (void*)pixel_data, w, h, 32, 4 * w, SDL_PIXELFORMAT_RGBA32 );
+    if ( surf != nullptr )
+    {
+      SDL_SetWindowIcon( con->m_Window, surf );
+    }
+    else
+    {
+      Log::LogError( "Creating surface failed for icon %s: %s", icon_full_path, SDL_GetError() );
+    }
+    SDL_FreeSurface( surf );
+  }
+  else
+  {
+    Log::LogError( "Loading window icon %s failed: %s\n", icon_full_path, stbi_failure_reason() );
+    return;
+  }
+
+  stbi_image_free( pixel_data );
 }
 
 //---------------------------------------------------------------------------------

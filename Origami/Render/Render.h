@@ -6,7 +6,7 @@
 namespace Render
 {
   //---------------------------------------------------------------------------------
-  void ENGINE_API Init( const char* window_title );
+  void ENGINE_API Init( const char* window_title, const char* window_icon = nullptr );
   void ENGINE_API Destroy();
   void ENGINE_API Draw();
 
