@@ -23,6 +23,8 @@ void Log::LogInfo( const char* fmt, ... )
     s_CallbackFunction( kLogLevelInfo, fmt, args );
     va_end( args );
   }
+#else
+  UNREFERENCED_PARAMETER( fmt );
 #endif
 }
 
@@ -37,6 +39,8 @@ void Log::LogError( const char* fmt, ... )
     s_CallbackFunction( kLogLevelError, fmt, args );
     va_end( args );
   }
+#else
+  UNREFERENCED_PARAMETER( fmt );
 #endif
 }
 

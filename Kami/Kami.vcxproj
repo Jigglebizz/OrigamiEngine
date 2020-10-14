@@ -89,6 +89,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Output\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Origami.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -126,6 +127,10 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Output\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Origami.lib</AdditionalDependencies>
     </Lib>
+    <Link>
+      <AdditionalDependencies>Origami.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Output\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

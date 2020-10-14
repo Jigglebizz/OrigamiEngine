@@ -41,7 +41,7 @@ static_assert(true, "Unrecognized configuration");
 #if ( BUILD < BUILD_FINAL )
   #define ASSERT_MSG( exp, message ) if ( ( exp ) == 0 ) __debugbreak();
 #else
-  #define ASSERT_MSG( exp, message )
+  #define ASSERT_MSG( exp, message ) UNREFERENCED_PARAMETER( exp );
 #endif
 
 #include "Origami/Util/Memory.h"

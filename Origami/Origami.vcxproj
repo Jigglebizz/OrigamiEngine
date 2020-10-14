@@ -149,9 +149,11 @@
     <ClInclude Include="Actor\BaseComponent.h" />
     <ClInclude Include="Anim\Anim.h" />
     <ClInclude Include="Anim\AnimComponent.h" />
+    <ClInclude Include="Asset\Asset.h" />
     <ClInclude Include="Asset\AssetLoader.h" />
     <ClInclude Include="Command\Command.h" />
     <ClInclude Include="Concurrency\Thread.h" />
+    <ClInclude Include="Filesystem\Filesystem.h" />
     <ClInclude Include="Game\Game.h" />
     <ClInclude Include="Input\Input.h" />
     <ClInclude Include="Math\Primitives.h" />
@@ -172,8 +174,10 @@
     <ClCompile Include="Actor\BaseComponent.cpp" />
     <ClCompile Include="Anim\Anim.cpp" />
     <ClCompile Include="Anim\AnimComponent.cpp" />
+    <ClCompile Include="Asset\Asset.cpp" />
     <ClCompile Include="Asset\AssetLoader.cpp" />
     <ClCompile Include="Concurrency\Thread.cpp" />
+    <ClCompile Include="Filesystem\Filesystem.cpp" />
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Input\Input.cpp" />
     <ClCompile Include="pch.cpp">

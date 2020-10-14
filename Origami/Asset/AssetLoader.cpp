@@ -28,6 +28,7 @@ char* AssetLoader::Load( const char* asset_name )
   if ( asset == nullptr )
   {
     Log::LogError( "No memory for asset %s\n", asset_name );
+    return nullptr;
   }
 
   strcpy_s( asset->m_Name, asset_name );

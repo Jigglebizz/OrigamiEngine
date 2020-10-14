@@ -10,8 +10,8 @@ int main( int argc, char* argv[] )
   UNREFERENCED_PARAMETER( argc );
   UNREFERENCED_PARAMETER( argv );
 
-  const char* source_path = AssetLoader::GetAssetsSourcePath();
-  const char* built_path  = AssetLoader::GetAssetsBuiltPath();
+  const char* source_path = Filesystem::GetAssetsSourcePath();
+  const char* built_path  = Filesystem::GetAssetsBuiltPath();
 
   UNREFERENCED_PARAMETER( source_path );
   UNREFERENCED_PARAMETER( built_path );

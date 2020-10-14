@@ -1,7 +1,9 @@
 #include "Origami/pch.h"
 #include "Origami/Filesystem/Filesystem.h"
+#include "Origami/Util/Log.h"
 
 #include <direct.h>
+#include <sys/stat.h>
 
 //---------------------------------------------------------------------------------
 const char* GetAssetsBasePath()
@@ -58,4 +60,10 @@ const char* Filesystem::GetAssetsBuiltPath()
     snprintf( built_path, kMaxPathLen, "%s%s", GetAssetsBasePath(), "\\built");
   }
   return built_path;
+}
+
+//---------------------------------------------------------------------------------
+const bool Filesystem::FileExists(const char* name) {
+  struct stat buffer;
+  return ( stat( name, &buffer ) == 0 );
 }

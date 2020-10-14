@@ -90,8 +90,8 @@ void Render::Init( const char* window_title, const char* window_icon )
 
   // Load window icon
   static constexpr char default_icon[] = "icon\\OrigamiIcon64.png";
-  char icon_full_path[ AssetLoader::kMaxPathLen ];
-  snprintf( icon_full_path, AssetLoader::kMaxPathLen, "%s\\%s", AssetLoader::GetAssetsSourcePath(), ( window_icon ) ? window_icon : default_icon );
+  char icon_full_path[ Filesystem::kMaxPathLen ];
+  snprintf( icon_full_path, Filesystem::kMaxPathLen, "%s\\%s", Filesystem::GetAssetsSourcePath(), ( window_icon ) ? window_icon : default_icon );
 
   int w, h, format;
   unsigned char* pixel_data = stbi_load( icon_full_path, &w, &h, &format, STBI_rgb_alpha );

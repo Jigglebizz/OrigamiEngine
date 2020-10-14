@@ -12,7 +12,7 @@ namespace Render
   //---------------------------------------------------------------------------------
   struct SpriteComponentInitProperties
   {
-    char     m_TextureAssetPath[ AssetLoader::kMaxAssetNameLen ];
+    char     m_TextureAssetPath[ Filesystem::kMaxAssetNameLen ];
     int      m_Layer;
     Vec2Int  m_FrameSize;
     uint8_t  m_FrameStride;
