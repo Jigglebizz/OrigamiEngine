@@ -6,13 +6,9 @@
 #include <sys/stat.h>
 
 //---------------------------------------------------------------------------------
-const char* GetAssetsBasePath()
+const char* GetProjectBasePath()
 {
-#ifdef _WIN32
   const char PATH_SEP = '\\';
-#else
-  const char PATH_SEP = '/';
-#endif
 
   static char base_path[ Filesystem::kMaxPathLen ];
 
@@ -33,10 +29,23 @@ const char* GetAssetsBasePath()
 
       project_folder_start[ StrLen( project_dir_name ) + 1 ] = 0;
 
-      snprintf( base_path, Filesystem::kMaxPathLen, "%s%s", cwd_path, "Assets" );
+      snprintf( base_path, Filesystem::kMaxPathLen, "%s", cwd_path );
       free( cwd_path );
     }
   }
+  return base_path;
+}
+
+//---------------------------------------------------------------------------------
+const char* GetAssetsBasePath()
+{
+  static char base_path[ Filesystem::kMaxPathLen ];
+
+  if ( *base_path == 0 )
+  {
+    snprintf( base_path, Filesystem::kMaxPathLen, "%s%s", GetProjectBasePath(), "Assets" );
+  }
+
   return base_path;
 }
 
@@ -60,6 +69,16 @@ const char* Filesystem::GetAssetsBuiltPath()
     snprintf( built_path, kMaxPathLen, "%s%s", GetAssetsBasePath(), "\\built");
   }
   return built_path;
+}
+
+const char* Filesystem::GetOutputPath()
+{
+  static char output_path[ kMaxPathLen ];
+  if ( *output_path == 0 )
+  {
+    snprintf( output_path, kMaxPathLen, "%s%s", GetProjectBasePath(), "Output" );
+  }
+  return output_path;
 }
 
 //---------------------------------------------------------------------------------

@@ -8,6 +8,7 @@ namespace Filesystem
   //---------------------------------------------------------------------------------
   const char* GetAssetsSourcePath();
   const char* GetAssetsBuiltPath();
+  const char* GetOutputPath();
 
   const bool ENGINE_API FileExists( const char* path );
 }
