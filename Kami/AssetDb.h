@@ -2,6 +2,7 @@
 
 #include "Origami/Asset/Asset.h"
 #include "Origami/Filesystem/Filesystem.h"
+#include "Origami/Concurrency/Mutex.h"
 
 //---------------------------------------------------------------------------------
 struct AssetDbEntry
@@ -17,6 +18,7 @@ class AssetDb
   uint64_t      m_EntriesCapacity;
   AssetDbEntry* m_Entries;
   char          m_FilePath[ Filesystem::kMaxPathLen ];
+  mutable Mutex m_Mutex;
 
 public:
   enum LoadStatus : uint8_t

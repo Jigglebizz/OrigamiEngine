@@ -10,6 +10,7 @@ static constexpr uint16_t kCapacityIncrements = 1024;
 //---------------------------------------------------------------------------------
 void AssetDb::Init()
 {
+  m_Mutex.Init( "Asset DB" );
   snprintf( m_FilePath, sizeof( m_FilePath ), "%s\\%s", Filesystem::GetAssetsBuiltPath(), kAssetDbFilename );
   m_EntriesCapacity = kCapacityIncrements;
   m_EntriesCount    = 0;
@@ -20,6 +21,7 @@ void AssetDb::Init()
 void AssetDb::Destroy()
 {
   free( m_Entries );
+  m_Mutex.Destroy();
 }
 
 //---------------------------------------------------------------------------------
@@ -37,6 +39,8 @@ AssetDb::LoadStatus AssetDb::LoadFromDisk()
     errno_t err = fopen_s( &db_file, m_FilePath, "r" );
     if ( err == 0 && db_file != nullptr )
     {
+      ScopedLock lock( &m_Mutex );
+
       fread( &m_EntriesCount, sizeof( m_EntriesCount ), 1, db_file );
 
       m_EntriesCapacity = ( ( m_EntriesCount / kCapacityIncrements) + 1 ) * kCapacityIncrements;
@@ -60,6 +64,7 @@ void AssetDb::SaveToDisk( )
   errno_t err = fopen_s( &db_file, m_FilePath, "w" );
   if ( err == 0 && db_file != nullptr )
   {
+    ScopedLock lock( &m_Mutex );
     fwrite( &m_EntriesCount, sizeof( m_EntriesCount ), 1,              db_file );
     fwrite( m_Entries,       sizeof( AssetDbEntry   ), m_EntriesCount, db_file );
     fclose( db_file );
@@ -73,6 +78,8 @@ void AssetDb::SaveToDisk( )
 //---------------------------------------------------------------------------------
 void AssetDb::UpdateEntries( AssetId* ids, uint32_t* versions, uint64_t len )
 {
+  ScopedLock lock( &m_Mutex );
+
   uint64_t current_count = m_EntriesCount;
   bool     need_sort     = false;
 
@@ -115,6 +122,7 @@ void AssetDb::UpdateEntries( AssetId* ids, uint32_t* versions, uint64_t len )
 //---------------------------------------------------------------------------------
 uint32_t AssetDb::GetVersionFor( AssetId id ) const
 {
+  ScopedLock lock( &m_Mutex );
   size_t found_idx = BinarySearch32( id.ToU32(), m_Entries, sizeof( AssetDbEntry ), m_EntriesCount );
   if ( found_idx != (size_t)-1 )
   {
