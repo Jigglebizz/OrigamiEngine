@@ -23,6 +23,12 @@ void AssetDb::Destroy()
 }
 
 //---------------------------------------------------------------------------------
+const char* AssetDb::GetFilePath() const
+{
+  return m_FilePath;
+}
+
+//---------------------------------------------------------------------------------
 AssetDb::LoadStatus AssetDb::LoadFromDisk()
 {
   if ( Filesystem::FileExists( m_FilePath ) )

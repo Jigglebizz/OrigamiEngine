@@ -7,6 +7,8 @@
 #include "Origami/Filesystem/Filesystem.h"
 #include "Origami/Util/Sort.h"
 
+#include "Kami/AssetDb.h"
+
 //---------------------------------------------------------------------------------
 static constexpr uint32_t kMaxBuildersCount = 32;
 static constexpr uint8_t  kMaxExtensionLen  = 16;
@@ -15,6 +17,10 @@ static constexpr uint8_t  kMaxExtensionLen  = 16;
 char g_SourcePath      [ Filesystem::kMaxPathLen ];
 char g_BuildersDirPath [ Filesystem::kMaxPathLen ];
 
+//---------------------------------------------------------------------------------
+AssetDb g_AssetDb;
+
+//---------------------------------------------------------------------------------
 int RunCommand( const char* command, char* output_buf, size_t output_buf_size )
 {
   static constexpr size_t tmp_buf_size = 128;
@@ -120,8 +126,29 @@ int main( int argc, char* argv[] )
   snprintf( g_BuildersDirPath, sizeof( g_BuildersDirPath ), "%s\\%s\\%s\\Builders", Filesystem::GetOutputPath(), BUILD_PLATFORM, BUILD_CONFIG );
 
   LoadBuilderInfos();
+  g_AssetDb.Init();
+  AssetDb::LoadStatus db_status = g_AssetDb.LoadFromDisk();
 
-  // scan for changes since last opened
+  switch ( db_status )
+  {
+  case AssetDb::kLoadStatusDoesNotExist:
+  {
+    printf( "Asset db does not exist. Creating at %s\n", g_AssetDb.GetFilePath() );
+  }
+  break;
+  case AssetDb::kLoadStatusOk:
+  {
+    printf( "Asset DB Loaded. Scanning for changes since last boot\n" );
+
+  }
+  break;
+  case AssetDb::kLoadStatusFileProblem:
+  default:
+  {
+    printf( "Problem with Asset DB. Could not run Kami!\n" );
+    return 1;
+  }
+  }
 
 
 

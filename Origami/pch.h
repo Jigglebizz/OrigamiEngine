@@ -9,8 +9,6 @@
 
 #define NOMINMAX
 
-#pragma warning( disable : 4996 ) // Prefer enum class to enum
-
 #define BUILD_DEBUG   0
 #define BUILD_RELEASE 1
 #define BUILD_FINAL   2

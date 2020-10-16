@@ -3,12 +3,14 @@
 #include "Origami/Asset/Asset.h"
 #include "Origami/Filesystem/Filesystem.h"
 
+//---------------------------------------------------------------------------------
 struct AssetDbEntry
 {
   AssetId  m_AssetId;
   uint32_t m_VersionHash;
 };
 
+//---------------------------------------------------------------------------------
 class AssetDb
 {
   uint64_t      m_EntriesCount;
@@ -24,12 +26,14 @@ public:
     kLoadStatusFileProblem  = 0x02
   };
 
-  void       Init          ();
-  void       Destroy       ();
-             
-  void       UpdateEntries ( AssetId* ids, uint32_t* versions, uint64_t len );
-  uint32_t   GetVersionFor ( AssetId id ) const;
+  void        Init          ();
+  void        Destroy       ();
+              
+  void        UpdateEntries ( AssetId* ids, uint32_t* versions, uint64_t len );
+  uint32_t    GetVersionFor ( AssetId id ) const;
+              
+  LoadStatus  LoadFromDisk  ( );
+  void        SaveToDisk    ( );
 
-  LoadStatus LoadFromDisk  ( );
-  void       SaveToDisk    ( );
+  const char* GetFilePath   ( ) const;
 };

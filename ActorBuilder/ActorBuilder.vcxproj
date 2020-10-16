@@ -62,17 +62,20 @@
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Builders\</OutDir>
     <IntDir>$(SolutionDir)Output\int\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <IncludePath>C:\sdk\rapidjson;$(SolutionDir);C:\sdk\SDL2-2.0.12\include;$(IncludePath)</IncludePath>
+    <CodeAnalysisRuleSet>..\Templates\Origami.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Builders\</OutDir>
     <IntDir>$(SolutionDir)Output\int\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <IncludePath>C:\sdk\rapidjson;$(SolutionDir);C:\sdk\SDL2-2.0.12\include;$(IncludePath)</IncludePath>
+    <CodeAnalysisRuleSet>..\Templates\Origami.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'">
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Builders\</OutDir>
     <IntDir>$(SolutionDir)Output\int\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <IncludePath>C:\sdk\rapidjson;$(SolutionDir);C:\sdk\SDL2-2.0.12\include;$(IncludePath)</IncludePath>
+    <CodeAnalysisRuleSet>..\Templates\Origami.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
