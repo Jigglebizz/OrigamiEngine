@@ -91,6 +91,24 @@ void LoadBuilderInfos()
   } while ( FindNextFile( hFind, &find_file_data ) != 0 );
 
   QuickSort32( &g_BuilderInfos, sizeof( BuilderInfo ), g_BuilderCount );
+  
+  for ( uint32_t i_sep = 0; i_sep < 44; ++i_sep )
+  {
+    putchar('=');
+  }
+  putchar( '\n' );
+  printf( "  Builder Info\n" );
+  for (uint32_t i_sep = 0; i_sep < 44; ++i_sep)
+  {
+    putchar('=');
+  }
+  putchar('\n');
+  for ( uint32_t i_builder = 0; i_builder < g_BuilderCount; ++i_builder )
+  {
+    BuilderInfo* info = &g_BuilderInfos[ i_builder ];
+    printf("ext: .%-17s version: %#08x", info->m_Extension, info->m_Version );
+  }
+
 }
 
 //---------------------------------------------------------------------------------
@@ -101,11 +119,11 @@ int main( int argc, char* argv[] )
 
   snprintf( g_BuildersDirPath, sizeof( g_BuildersDirPath ), "%s\\%s\\%s\\Builders", Filesystem::GetOutputPath(), BUILD_PLATFORM, BUILD_CONFIG );
 
-  // Load builder info
   LoadBuilderInfos();
 
+  // scan for changes since last opened
 
-  // scan for changes
+
 
   // create change notification handle
 
