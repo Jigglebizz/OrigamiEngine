@@ -35,7 +35,7 @@ void Render::SpriteComponent::Destroy()
 //---------------------------------------------------------------------------------
 void Render::SpriteComponent::UpdateLast( float dt )
 {
-  UNREFERENCED_PARAMETER( dt );
+  UNREFFED_PARAMETER( dt );
   Render::SetTexImageRect( m_TexHandle, MakeImageRect() );
   Render::SetTexPosition(  m_TexHandle, GetActor()->GetPosition() );
 }

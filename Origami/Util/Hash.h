@@ -49,7 +49,7 @@ namespace crc
 }
 
 //---------------------------------------------------------------------------------
-constexpr uint32_t ENGINE_API Crc32(uint32_t initial, const char* buf, size_t len)
+constexpr inline uint32_t Crc32( uint32_t initial, const char* buf, size_t len )
 {
   constexpr auto table = crc::crc_table< 256 >();
 
@@ -63,7 +63,7 @@ constexpr uint32_t ENGINE_API Crc32(uint32_t initial, const char* buf, size_t le
 }
 
 //---------------------------------------------------------------------------------
-constexpr inline uint32_t ENGINE_API Crc32( const char* string)
+constexpr inline uint32_t ENGINE_API Crc32( const char* string )
 {
   return Crc32( 0, string, StrLen(string) );
 }

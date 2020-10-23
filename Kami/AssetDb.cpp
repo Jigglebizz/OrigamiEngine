@@ -61,7 +61,7 @@ AssetDb::LoadStatus AssetDb::LoadFromDisk()
 void AssetDb::SaveToDisk( )
 {
   FILE* db_file;
-  errno_t err = fopen_s( &db_file, m_FilePath, "w" );
+  errno_t err = fopen_s( &db_file, m_FilePath, "w+bS" );
   if ( err == 0 && db_file != nullptr )
   {
     ScopedLock lock( &m_Mutex );
@@ -76,14 +76,14 @@ void AssetDb::SaveToDisk( )
 }
 
 //---------------------------------------------------------------------------------
-void AssetDb::UpdateEntries( AssetId* ids, uint32_t* versions, uint64_t len )
+void AssetDb::UpdateEntries( AssetId* ids, uint32_t* versions, uint32_t len )
 {
   ScopedLock lock( &m_Mutex );
 
-  uint64_t current_count = m_EntriesCount;
+  uint32_t current_count = m_EntriesCount;
   bool     need_sort     = false;
 
-  for ( uint64_t i_entry = 0; i_entry < len; ++i_entry )
+  for ( uint32_t i_entry = 0; i_entry < len; ++i_entry )
   {
     size_t found_idx = BinarySearch32( ids[ i_entry ].ToU32(), m_Entries, sizeof( AssetDbEntry ), current_count );
     if ( found_idx != (size_t)-1 )
@@ -129,4 +129,22 @@ uint32_t AssetDb::GetVersionFor( AssetId id ) const
     return m_Entries[ found_idx ].m_VersionHash;
   }
   return (uint32_t)-1;
+}
+
+//---------------------------------------------------------------------------------
+// Note that current_versions must be sorted
+void AssetDb::GetOutOfDateAssetIds( const uint32_t* current_versions, uint32_t len_current_versions, AssetId* ids, uint32_t* num_ids )
+{
+  uint32_t max_ids = *num_ids;
+  ASSERT_MSG( max_ids > 0, "Num IDs must describe how many ids can be placed in 'ids' field" );
+
+  *num_ids = 0;
+
+  for ( uint32_t i_entry = 0; i_entry < m_EntriesCount; ++i_entry )
+  {
+    if ( BinarySearch32( m_Entries[ i_entry ].m_VersionHash, current_versions, sizeof(uint32_t), len_current_versions) == -1 )
+    {
+      ids[ *num_ids++ ] = m_Entries[ i_entry ].m_AssetId;
+    }
+  }
 }

@@ -19,7 +19,7 @@ static float constexpr kFrameTime = 1000.f / kFpsTarget;
 //---------------------------------------------------------------------------------
 void LogFunction( uint8_t flags, const char* fmt, va_list args )
 {
-  UNREFERENCED_PARAMETER( flags );
+  UNREFFED_PARAMETER( flags );
   Log::Timestamp ts = Log::MsToTimestamp( g_Time );
   printf("[%d:%02d:%02d:%03d]", ts.h, ts.m, ts.s, ts.ms );
   vprintf( fmt, args );

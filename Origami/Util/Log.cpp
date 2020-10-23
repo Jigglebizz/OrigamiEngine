@@ -24,7 +24,7 @@ void Log::LogInfo( const char* fmt, ... )
     va_end( args );
   }
 #else
-  UNREFERENCED_PARAMETER( fmt );
+  UNREFFED_PARAMETER( fmt );
 #endif
 }
 
@@ -40,7 +40,7 @@ void Log::LogError( const char* fmt, ... )
     va_end( args );
   }
 #else
-  UNREFERENCED_PARAMETER( fmt );
+  UNREFFED_PARAMETER( fmt );
 #endif
 }
 

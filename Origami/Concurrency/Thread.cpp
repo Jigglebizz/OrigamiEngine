@@ -80,3 +80,18 @@ const bool Thread::Joinable() const
 {
   return ( m_Flags & ( kAlive | kRequestStop ) ) == 0;
 }
+
+//---------------------------------------------------------------------------------
+uint32_t Thread::GetNumLogicalCores()
+{
+  static uint32_t num_cores = 0;
+
+  if ( num_cores == 0 )
+  {
+    SYSTEM_INFO sys_info;
+    GetSystemInfo( &sys_info );
+    num_cores = sys_info.dwNumberOfProcessors;
+  }
+
+  return num_cores;
+}

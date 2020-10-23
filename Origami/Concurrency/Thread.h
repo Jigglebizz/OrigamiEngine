@@ -16,7 +16,7 @@ private:
     kActiveRequest = 0x04,
     kIsAudioThread = 0x10,
   };
-
+  
   uint32_t        m_Id;
   HANDLE          m_SystemThreadHandle;
   uint8_t         m_Flags;
@@ -29,16 +29,19 @@ public:
 
   Thread( );
 
-         void  Start           ( ThreadFunction func = kLastFunction );
-         void  RequestStop     ( );
-  const  bool  Stopped         ( ) const;
-         void  Join            ( );
-  const  bool  Joinable        ( ) const;
+         void    Start           ( ThreadFunction func = kLastFunction );
+         void    RequestStop     ( );
+  const  bool    Stopped         ( ) const;
+         void    Join            ( );
+  const  bool    Joinable        ( ) const;
+                 
+  inline void    EnsureRequests  ( );
+  inline void    ReceiptRequests ( );
+                 
+         void    SetIsAudioThread( bool enabled = true ) { m_Flags = ( enabled ) ? m_Flags | kIsAudioThread : m_Flags & ~kIsAudioThread; }
 
-  inline void  EnsureRequests  ( );
-  inline void  ReceiptRequests ( );
-
-         void  SetIsAudioThread( bool enabled = true ) { m_Flags = ( enabled ) ? m_Flags | kIsAudioThread : m_Flags & ~kIsAudioThread; }
+  //---------------------------------------------------------------------------------
+  static uint32_t GetNumLogicalCores();
 };
 
 //---------------------------------------------------------------------------------

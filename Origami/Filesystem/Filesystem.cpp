@@ -82,7 +82,41 @@ const char* Filesystem::GetOutputPath()
 }
 
 //---------------------------------------------------------------------------------
-const bool Filesystem::FileExists(const char* name) {
+const bool Filesystem::FileExists( const char* name )
+{
   struct stat buffer;
   return ( stat( name, &buffer ) == 0 );
+}
+
+//---------------------------------------------------------------------------------
+void Filesystem::CreateDir( const char* name )
+{
+  _mkdir( name );
+}
+
+//---------------------------------------------------------------------------------
+int Filesystem::RunCommand( const char* command, char* output_buf, size_t output_buf_size )
+{
+  static constexpr size_t tmp_buf_size = 128;
+  char tmp_buf[ tmp_buf_size ];
+  FILE* exe_pipe = _popen( command, "rt" );
+
+  size_t output_buf_cursor = 0;
+  while ( fgets( tmp_buf, tmp_buf_size, exe_pipe ) )
+  {
+    size_t len_tmp_buf = StrLen( tmp_buf );
+    if ( output_buf_cursor + len_tmp_buf < output_buf_size )
+    {
+      snprintf( &output_buf[ output_buf_cursor ], output_buf_size - output_buf_cursor, "%s", tmp_buf );
+    }
+    output_buf_cursor += len_tmp_buf;
+  }
+
+  if ( feof( exe_pipe ) )
+  {
+    return _pclose( exe_pipe );
+  }
+
+  printf("\nError: Failed to read the pipe to the end.\n");
+  return 2;
 }

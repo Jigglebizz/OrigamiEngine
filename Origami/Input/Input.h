@@ -26,9 +26,9 @@ namespace Input
 
   struct InputCon
   {
-    static constexpr uint8_t kMaxButtonEventsPerFrame = 8; // TODO: Measure what's reasonable here
+    static constexpr uint32_t kMaxButtonEventsPerFrame = 10; // all your fingers
 
-    uint8_t     m_ButtonEventCount;
+    uint32_t    m_ButtonEventCount;
     ButtonEvent m_ButtonEventQueue[ kMaxButtonEventsPerFrame ];
   };
 

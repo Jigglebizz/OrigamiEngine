@@ -10,7 +10,7 @@ void BaseComponent::BaseInit( ActorBase* actor )
 //---------------------------------------------------------------------------------
 void BaseComponent::Init( ActorBase* actor, void* init_params )
 {
-  UNREFERENCED_PARAMETER( init_params );
+  UNREFFED_PARAMETER( init_params );
   BaseInit( actor );
 }
 
@@ -23,17 +23,17 @@ ActorBase* BaseComponent::GetActor()
 //---------------------------------------------------------------------------------
 void BaseComponent::UpdateFirst( float dt )
 {
-  UNREFERENCED_PARAMETER( dt );
+  UNREFFED_PARAMETER( dt );
 }
 
 //---------------------------------------------------------------------------------
 void BaseComponent::UpdateMiddle( float dt )
 {
-  UNREFERENCED_PARAMETER( dt );
+  UNREFFED_PARAMETER( dt );
 }
 
 //---------------------------------------------------------------------------------
 void BaseComponent::UpdateLast( float dt )
 {
-  UNREFERENCED_PARAMETER( dt );
+  UNREFFED_PARAMETER( dt );
 }

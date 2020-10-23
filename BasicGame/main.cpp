@@ -13,8 +13,8 @@ BaseCharacter s_BaseChar;
 //---------------------------------------------------------------------------------
 int main( int argc, char* argv[] )
 {
-  UNREFERENCED_PARAMETER( argc );
-  UNREFERENCED_PARAMETER( argv );
+  UNREFFED_PARAMETER( argc );
+  UNREFFED_PARAMETER( argv );
 
   Game::Init( "Origami test" );
 

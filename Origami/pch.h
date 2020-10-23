@@ -32,19 +32,19 @@ static_assert(true, "Unrecognized configuration");
 #define ENGINE_API __stdcall
 #define DISABLE_OPTS __pragma( optimize( "", off ) )
 
-#define OFFSET_OF( struct_name, member ) &((struct_name*)0)->member
+#define OFFSET_OF( struct_name, member ) (uint64_t)&((struct_name*)0)->member
 
-#define UNREFERED_PARAMETER( param ) (void)(param)
+#define UNREFFED_PARAMETER( param ) (void)(param)
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
 #if ( BUILD < BUILD_FINAL )
   #define ASSERT_MSG( exp, message ) if ( ( exp ) == 0 ) __debugbreak();
 #else
-  #define ASSERT_MSG( exp, message ) UNREFERENCED_PARAMETER( exp );
+  #define ASSERT_MSG( exp, message ) UNREFFED_PARAMETER( exp );
 #endif
 
-#include "Origami/Util/Memory.h"
+#include "Origami/Memory/Memory.h"
 #include "Origami/Util/Hash.h"
 
 

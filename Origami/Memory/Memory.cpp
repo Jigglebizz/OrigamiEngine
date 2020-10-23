@@ -1,5 +1,5 @@
 #include "Origami/pch.h"
-#include "Memory.h"
+#include "Origami/Memory/Memory.h"
 
 //---------------------------------------------------------------------------------
 void MemZero( void* dst, size_t n )
@@ -109,4 +109,51 @@ uint32_t Bitset::GetNextSetBit( uint32_t current ) const
   }
 
   return (uint32_t)-1;
+}
+
+//---------------------------------------------------------------------------------
+void MemAllocHeap::InitWithBacking( void* data, size_t size, char* name )
+{
+  ASSERT_MSG( StrLen( name ) <= kMaxHeapNameSize, "Heap name is too long" );
+
+  m_Tlsf = tlsf_create_with_pool( data, size );
+}
+
+//---------------------------------------------------------------------------------
+void MemAllocHeap::Destroy()
+{
+  tlsf_destroy( m_Tlsf );
+}
+
+//---------------------------------------------------------------------------------
+void* MemAllocHeap::Alloc( size_t size )
+{
+  return tlsf_malloc( m_Tlsf, size );
+}
+
+//---------------------------------------------------------------------------------
+void* MemAllocHeap::MemAlign( size_t align, size_t bytes )
+{
+  return tlsf_memalign( m_Tlsf, align, bytes );
+}
+
+//---------------------------------------------------------------------------------
+void* MemAllocHeap::Realloc( void* ptr, size_t size )
+{
+  return tlsf_realloc( m_Tlsf, ptr, size );
+}
+
+//---------------------------------------------------------------------------------
+void MemAllocHeap::Free( void* ptr )
+{
+  tlsf_free( m_Tlsf, ptr );
+}
+
+//---------------------------------------------------------------------------------
+HeapAuditInfo MemAllocHeap::Audit()
+{
+  HeapAuditInfo info;
+  info.size = tlsf_size();
+
+  return info;
 }

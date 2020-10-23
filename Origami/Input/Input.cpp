@@ -5,6 +5,8 @@
 #include "Origami/Util/Log.h"
 #include "Origami/Game/Game.h"
 
+DISABLE_OPTS
+
 //---------------------------------------------------------------------------------
 void Input::Init()
 {
@@ -27,8 +29,23 @@ void Input::EventPump()
   case SDL_KEYDOWN:
   case SDL_KEYUP:
   {
-    ButtonEvent* evt = &con->m_ButtonEventQueue[ con->m_ButtonEventCount++ ];
-    ASSERT_MSG( con->m_ButtonEventCount == InputCon::kMaxButtonEventsPerFrame, "Exceeded max button events per frame" );
+    ButtonEvent* evt = nullptr;
+    bool add_new = true;
+
+    for ( uint32_t i_evt = 0; i_evt < con->m_ButtonEventCount; ++i_evt )
+    {
+      if ( con->m_ButtonEventQueue[ i_evt ].m_ButtonId == (uint32_t)sdl_evt.key.keysym.sym )
+      {
+        evt = &con->m_ButtonEventQueue[ i_evt ];
+        add_new = false;
+      }
+    }
+
+    if ( add_new )
+    {
+      evt = &con->m_ButtonEventQueue[ con->m_ButtonEventCount++ ];
+      ASSERT_MSG( con->m_ButtonEventCount != InputCon::kMaxButtonEventsPerFrame, "Exceeded max button events per frame" );
+    }
 
     evt->m_Flags = ButtonEvent::kFlagsSourceKeyboard | ( sdl_evt.type == SDL_KEYDOWN ? ButtonEvent::kFlagsStateDown : ButtonEvent::kFlagsStateUp );
     evt->m_PlayerId = 0;
@@ -50,6 +67,7 @@ void Input::Update()
   for ( uint32_t i_button_evt = 0; i_button_evt < con->m_ButtonEventCount; ++i_button_evt )
   {
     ButtonEvent* evt = &con->m_ButtonEventQueue[ i_button_evt ];
+    UNREFFED_PARAMETER( evt );
     Log::LogInfo( "Button event: %d was %x\n", evt->m_ButtonId, evt->m_Flags );
   }
   con->m_ButtonEventCount = 0;
