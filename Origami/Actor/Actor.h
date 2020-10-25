@@ -84,7 +84,8 @@ void ActorBase::AddComponent( void* init_params )
   ComponentInfo* new_info = &m_Components[ m_ComponentCount++ ];
   new_info->m_ComponentTypeId = id;
 
-  new_info->m_Component = (ComponentClass*)con->m_ComponentHeap.Alloc( sizeof( ComponentClass ) );
+  void* component_memory = con->m_ComponentHeap.Alloc( sizeof( ComponentClass ) );
+  new_info->m_Component = new ( component_memory ) ComponentClass();
   new_info->m_Component->Init( this, init_params );
 
   QuickSort64( m_Components, sizeof( ComponentInfo ), m_ComponentCount );
