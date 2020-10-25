@@ -17,8 +17,7 @@ void ActorBase::BaseDestroy( )
 {
   for ( uint32_t i_component = 0; i_component < m_ComponentCount; ++i_component )
   {
-    // TODO: Use component heap
-    delete m_Components[ i_component ].m_Component;
+    Actor::g_ActorCon.m_ComponentHeap.Free( m_Components[ i_component ].m_Component );
   }
 }
 

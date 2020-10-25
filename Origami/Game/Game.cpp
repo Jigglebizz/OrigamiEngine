@@ -29,6 +29,7 @@ void LogFunction( uint8_t flags, const char* fmt, va_list args )
 void Game::Init( const char* title, const char* window_icon )
 {
   Log::RegisterCallback(LogFunction);
+  AssetLoader::Init();
   Actor::Init();
   Render::Init( title, window_icon );
   Anim::Init();
@@ -61,6 +62,7 @@ void Destroy()
 {
   Anim::Destroy();
   Render::Destroy();
+  AssetLoader::Destroy();
 }
 
 //---------------------------------------------------------------------------------

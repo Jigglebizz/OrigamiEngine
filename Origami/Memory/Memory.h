@@ -52,12 +52,12 @@ struct HeapAuditInfo
 class MemAllocHeap
 {
 private:
+public:
   static constexpr uint32_t kMaxHeapNameSize = 32;
 
-  const char m_HeapName[ kMaxHeapNameSize ];
-  tlsf_t     m_Tlsf;
-public:
-  void          ENGINE_API InitWithBacking ( void* data, size_t size, char* name );
+  tlsf_t m_Tlsf;
+  char   m_HeapName[ kMaxHeapNameSize ];
+  void          ENGINE_API InitWithBacking ( void* data, size_t size, const char* name );
   void          ENGINE_API Destroy         ();
 
   void*         ENGINE_API Alloc           ( size_t size );

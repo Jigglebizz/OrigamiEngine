@@ -14,9 +14,15 @@
 static constexpr uint32_t kMaxBuildersCount = 32;
 static constexpr uint8_t  kMaxExtensionLen  = 16;
 
+static constexpr uint32_t kKamiWorkingSetSize = 20 * 1024 * 1024; // 20 MB
+
 //---------------------------------------------------------------------------------
 char g_SourcePath      [ Filesystem::kMaxPathLen ];
 char g_BuildersDirPath [ Filesystem::kMaxPathLen ];
+
+//---------------------------------------------------------------------------------
+char         g_KamiWorkingSetBacking[ kKamiWorkingSetSize ];
+MemAllocHeap g_KamiWorkingSetHeap;
 
 //---------------------------------------------------------------------------------
 AssetDb g_AssetDb;
@@ -114,14 +120,14 @@ void GetOutOfDateBuiltAssets()
   uint32_t asset_db_size = g_AssetDb.GetCapacity();
   g_AssetChangesCapacity = ( asset_db_size > 0 ) ? asset_db_size : 1024;
 
-  g_AssetChanges         = (AssetChangeInfo*)malloc( g_AssetChangesCapacity * sizeof( AssetChangeInfo ) );
+  g_AssetChanges         = (AssetChangeInfo*)g_KamiWorkingSetHeap.Alloc( g_AssetChangesCapacity * sizeof( AssetChangeInfo ) );
   g_AssetChangeCount     = 0;
 
   // scan db for builder version differences
   uint32_t  num_changed_ids   = g_AssetChangesCapacity;
-  AssetId*  changed_asset_ids = (AssetId*)malloc( num_changed_ids * sizeof( AssetId ) );
+  AssetId*  changed_asset_ids = (AssetId*)g_KamiWorkingSetHeap.Alloc( num_changed_ids * sizeof( AssetId ) );
 
-  uint32_t* current_asset_versions = (uint32_t*)malloc( g_BuilderCount * sizeof ( uint32_t ) );
+  uint32_t* current_asset_versions = (uint32_t*)g_KamiWorkingSetHeap.Alloc( g_BuilderCount * sizeof ( uint32_t ) );
   if ( current_asset_versions == nullptr )
   {
     printf( "Could not allocate memory for current_asset_versions!\n");
@@ -140,7 +146,7 @@ void GetOutOfDateBuiltAssets()
 //---------------------------------------------------------------------------------
 void ScanFilesystemForNewAssets()
 {
-  uint32_t* asset_extensions = (uint32_t*)malloc( sizeof(uint32_t) * g_BuilderCount );
+  uint32_t* asset_extensions = (uint32_t*)g_KamiWorkingSetHeap.Alloc( sizeof(uint32_t) * g_BuilderCount );
 
 
   Filesystem::DoForEachFileInDirectory( Filesystem::GetAssetsSourcePath(), [ asset_extensions ]( const Filesystem::FileCallbackParams* file_params ) {
@@ -173,6 +179,8 @@ int main( int argc, char* argv[] )
   {
     Filesystem::CreateDir( Filesystem::GetAssetsBuiltPath() );
   }
+
+  g_KamiWorkingSetHeap.InitWithBacking( g_KamiWorkingSetBacking, sizeof( g_KamiWorkingSetBacking ), "Kami Working Set" );
 
   snprintf( g_BuildersDirPath, sizeof( g_BuildersDirPath ), "%s\\%s\\%s\\Builders", Filesystem::GetOutputPath(), BUILD_PLATFORM, BUILD_CONFIG );
   LoadBuilderInfos();

@@ -1,6 +1,11 @@
 #include "Origami/pch.h"
 #include "Origami/Memory/Memory.h"
 
+#include "Origami/Util/Log.h"
+
+#define MEMORY_LOGGING
+DISABLE_OPTS
+
 //---------------------------------------------------------------------------------
 void MemZero( void* dst, size_t n )
 {
@@ -112,48 +117,64 @@ uint32_t Bitset::GetNextSetBit( uint32_t current ) const
 }
 
 //---------------------------------------------------------------------------------
-void MemAllocHeap::InitWithBacking( void* data, size_t size, char* name )
+void MemAllocHeap::InitWithBacking( void* data, size_t size, const char* name )
 {
   ASSERT_MSG( StrLen( name ) <= kMaxHeapNameSize, "Heap name is too long" );
+  strcpy_s( m_HeapName, name );
 
-  m_Tlsf = tlsf_create_with_pool( data, size );
+  //m_Tlsf = tlsf_create_with_pool( data, size );
+
+#ifdef MEMORY_LOGGING
+  Log::LogInfo( "Created TLSF heap %s of size %llu. Data is at %#08x\n", name, size, data );
+#endif
 }
 
 //---------------------------------------------------------------------------------
 void MemAllocHeap::Destroy()
 {
-  tlsf_destroy( m_Tlsf );
+  //tlsf_destroy( m_Tlsf );
+
+#ifdef MEMORY_LOGGING
+  Log::LogInfo("Destroyed TLSF heap %s\n", m_HeapName );
+#endif
 }
 
 //---------------------------------------------------------------------------------
 void* MemAllocHeap::Alloc( size_t size )
 {
-  return tlsf_malloc( m_Tlsf, size );
+  return malloc( size );
+  //return tlsf_malloc( m_Tlsf, size );
 }
 
 //---------------------------------------------------------------------------------
 void* MemAllocHeap::MemAlign( size_t align, size_t bytes )
 {
-  return tlsf_memalign( m_Tlsf, align, bytes );
+  UNREFFED_PARAMETER( align );
+  UNREFFED_PARAMETER( bytes );
+  return nullptr;
+  //return tlsf_memalign( m_Tlsf, align, bytes );
 }
 
 //---------------------------------------------------------------------------------
 void* MemAllocHeap::Realloc( void* ptr, size_t size )
 {
-  return tlsf_realloc( m_Tlsf, ptr, size );
+  return realloc( ptr, size );
+  //return tlsf_realloc( m_Tlsf, ptr, size );
 }
 
 //---------------------------------------------------------------------------------
 void MemAllocHeap::Free( void* ptr )
 {
-  tlsf_free( m_Tlsf, ptr );
+  return free( ptr );
+  //tlsf_free( m_Tlsf, ptr );
 }
 
 //---------------------------------------------------------------------------------
 HeapAuditInfo MemAllocHeap::Audit()
 {
   HeapAuditInfo info;
-  info.size = tlsf_size();
+  info.size = 1'000'000'000;
+  //info.size = tlsf_size();
 
   return info;
 }

@@ -1,11 +1,15 @@
 #pragma once
 
-#include "Origami/Actor/Actor.h"
+class ActorBase;
 
 namespace Actor
 {
   //---------------------------------------------------------------------------------
+  static constexpr uint32_t kComponentHeapSize = 32 * 1024 * 1024; // 32 MB
+
+  //---------------------------------------------------------------------------------
   void            Init();
+  void            Destroy();
   void            UpdateFirst  ( float dt );
   void            UpdateMiddle ( float dt );
   void            UpdateLast   ( float dt );
@@ -21,6 +25,14 @@ namespace Actor
     ActorBase* m_Actor;
   };
 
-  static uint32_t     s_ActorInfoCount;
-  static ActorInfo    s_ActorInfos[ kMaxActors ];
+  struct ActorCon
+  {
+    char         m_ComponentHeapBacking[ kComponentHeapSize ];
+    MemAllocHeap m_ComponentHeap;
+
+    uint32_t     m_ActorInfoCount;
+    ActorInfo    m_ActorInfos[ kMaxActors ];
+  };
+
+  static ActorCon g_ActorCon;
 }

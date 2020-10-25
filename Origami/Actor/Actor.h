@@ -2,6 +2,7 @@
 
 #include "Origami/Math/Primitives.h"
 #include "Origami/Actor/BaseComponent.h"
+#include "Origami/Actor/ActorSystem.h"
 
 #include "Origami/Util/Search.h"
 #include "Origami/Util/Sort.h"
@@ -34,17 +35,17 @@ protected:
           void     BaseDestroy ();
 public:
   //---------------------------------------------------------------------------------
-  const   char*    GetName     () const;
-  inline  uint64_t GetId       () const;
+  const   char*    ENGINE_API GetName     () const;
+  inline  uint64_t ENGINE_API GetId       () const;
 
-  virtual void     Init        ( );
-          void     UpdateFirst ( float dt );
-          void     UpdateMiddle( float dt );
-          void     UpdateLast  ( float dt );
-  virtual void     Destroy     ();
+  virtual void     ENGINE_API Init        ( );
+          void     ENGINE_API UpdateFirst ( float dt );
+          void     ENGINE_API UpdateMiddle( float dt );
+          void     ENGINE_API UpdateLast  ( float dt );
+  virtual void     ENGINE_API Destroy     ();
                    
-  inline  Vec2     GetPosition () const;
-  inline  void     SetPosition ( const Vec2* pos );
+  inline  Vec2     ENGINE_API GetPosition () const;
+  inline  void     ENGINE_API SetPosition ( const Vec2* pos );
 
   template <class ComponentClass>
   void ENGINE_API AddComponent( void* init_params = nullptr );
@@ -72,7 +73,8 @@ uint64_t ActorBase::GetId() const
 template <class ComponentClass>
 void ActorBase::AddComponent( void* init_params )
 {
-  // TODO: Create on component heap
+  Actor::ActorCon* con = &Actor::g_ActorCon;
+
   ASSERT_MSG( m_ComponentCount < kMaxComponents, "Attempting to add too many components to actor!" );
   uint64_t id = ComponentClass::GetId();
 
@@ -82,8 +84,7 @@ void ActorBase::AddComponent( void* init_params )
   ComponentInfo* new_info = &m_Components[ m_ComponentCount++ ];
   new_info->m_ComponentTypeId = id;
 
-  // TODO: create from component heap
-  new_info->m_Component = new ComponentClass();
+  new_info->m_Component = (ComponentClass*)con->m_ComponentHeap.Alloc( sizeof( ComponentClass ) );
   new_info->m_Component->Init( this, init_params );
 
   QuickSort64( m_Components, sizeof( ComponentInfo ), m_ComponentCount );

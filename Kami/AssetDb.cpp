@@ -5,22 +5,24 @@
 #include "Origami/Util/Search.h"
 
 static const     char*    kAssetDbFilename    = "AssetDb.db";
-static constexpr uint16_t kCapacityIncrements = 1024;
+static constexpr uint32_t kCapacityIncrements = 1024;
 
 //---------------------------------------------------------------------------------
 void AssetDb::Init()
 {
   m_Mutex.Init( "Asset DB" );
   snprintf( m_FilePath, sizeof( m_FilePath ), "%s\\%s", Filesystem::GetAssetsBuiltPath(), kAssetDbFilename );
+  m_Heap.InitWithBacking( m_HeapBacking, sizeof( m_HeapBacking ), "AssetDB Heap" );
+
   m_EntriesCapacity = kCapacityIncrements;
   m_EntriesCount    = 0;
-  m_Entries = (AssetDbEntry*)malloc( m_EntriesCapacity );
+  m_Entries = (AssetDbEntry*)m_Heap.Alloc( m_EntriesCapacity );
 }
 
 //---------------------------------------------------------------------------------
 void AssetDb::Destroy()
 {
-  free( m_Entries );
+  m_Heap.Free( m_Entries );
   m_Mutex.Destroy();
 }
 
@@ -45,9 +47,9 @@ AssetDb::LoadStatus AssetDb::LoadFromDisk()
 
       m_EntriesCapacity = ( ( m_EntriesCount / kCapacityIncrements) + 1 ) * kCapacityIncrements;
 
-      free( m_Entries );
+      m_Heap.Free( m_Entries );
 
-      m_Entries = (AssetDbEntry*)malloc( m_EntriesCapacity );
+      m_Entries = (AssetDbEntry*)m_Heap.Alloc( m_EntriesCapacity );
       return kLoadStatusOk;
     }
     printf( "Error! could not open db file: %d", err );
@@ -94,7 +96,7 @@ void AssetDb::UpdateEntries( AssetId* ids, uint32_t* versions, uint32_t len )
     {
       if ( m_EntriesCount == m_EntriesCapacity )
       {
-        AssetDbEntry* new_entries = (AssetDbEntry*)realloc( m_Entries, m_EntriesCapacity + kCapacityIncrements );
+        AssetDbEntry* new_entries = (AssetDbEntry*)m_Heap.Realloc( m_Entries, (uint64_t)m_EntriesCapacity + (uint64_t)kCapacityIncrements );
         if ( new_entries == nullptr )
         {
           printf("Error! could not realloc asset db!\n");

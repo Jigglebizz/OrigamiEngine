@@ -8,6 +8,18 @@
 
 
 //---------------------------------------------------------------------------------
+void AssetLoader::Init()
+{
+  m_AssetHeap.InitWithBacking( m_AssetHeapBacking, sizeof( m_AssetHeapBacking ), "Asset Heap" );
+}
+
+//---------------------------------------------------------------------------------
+void AssetLoader::Destroy()
+{
+  m_AssetHeap.Destroy();
+}
+
+//---------------------------------------------------------------------------------
 char* AssetLoader::Load( const char* asset_name )
 {
   char full_path[ Filesystem::kMaxPathLen ];
@@ -23,7 +35,7 @@ char* AssetLoader::Load( const char* asset_name )
   uint64_t asset_size = file.tellg();
   file.seekg( 0, std::ios::beg );
 
-  BasicAsset* asset = (BasicAsset*)malloc( sizeof( BasicAsset ) + asset_size );
+  BasicAsset* asset = (BasicAsset*)m_AssetHeap.Alloc( sizeof( BasicAsset ) + asset_size );
 
   if ( asset == nullptr )
   {
@@ -42,5 +54,5 @@ char* AssetLoader::Load( const char* asset_name )
 //---------------------------------------------------------------------------------
 void AssetLoader::Free( void* asset )
 {
-  free( asset );
+  m_AssetHeap.Free( asset );
 }
