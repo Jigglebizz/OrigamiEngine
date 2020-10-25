@@ -57,6 +57,7 @@ public:
 
   tlsf_t m_Tlsf;
   char   m_HeapName[ kMaxHeapNameSize ];
+
   void          ENGINE_API InitWithBacking ( void* data, size_t size, const char* name );
   void          ENGINE_API Destroy         ();
 

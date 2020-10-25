@@ -34,5 +34,5 @@ namespace Actor
     ActorInfo    m_ActorInfos[ kMaxActors ];
   };
 
-  static ActorCon g_ActorCon;
+  extern ActorCon g_ActorCon;
 }
