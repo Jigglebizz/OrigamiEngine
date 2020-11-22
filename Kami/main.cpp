@@ -12,7 +12,6 @@
 
 #include "Kami/AssetDb.h"
 
-DISABLE_OPTS
 
 //---------------------------------------------------------------------------------
 static constexpr uint32_t kMaxBuildersCount        = 32;

@@ -12,8 +12,6 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 
-DISABLE_OPTS
-
 GlobalSettings g_GameSettings;
 
 //---------------------------------------------------------------------------------

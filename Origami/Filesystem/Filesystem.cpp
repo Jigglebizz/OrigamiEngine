@@ -159,23 +159,6 @@ void Filesystem::ReadFile( const char* file_path, char* out_data, size_t* data_s
   {
     *data_size = size;
   }
-  
-
-
-
-  //std::ifstream file( file_path, std::ios::binary | std::ios::in | std::ios::ate);
-  //if (file.good() == false)
-  //{
-  //  Log::LogError("Could not open file %s\n", file_path );
-  //  *data_size = 0;
-  //  return;
-  //}
-
-  //uint64_t asset_size = file.tellg();
-  //file.seekg(0, std::ios::beg);
-
-  //file.read( out_data , *data_size );
-  //*data_size = file.tellg();
 }
 
 //---------------------------------------------------------------------------------
