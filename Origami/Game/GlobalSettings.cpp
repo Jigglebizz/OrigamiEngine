@@ -225,8 +225,8 @@ void GlobalSettings::Init( ProjectType project_type )
 
   #if BUILD < BUILD_FINAL
   {
-    printf( "Using Memory Budgets:\n" );
-    printf( "================================\n" );
+    Log::LogInfo( "Using Memory Budgets:\n" );
+    Log::LogInfo( "================================\n" );
     char budget_fmt[ 25 ];
     snprintf( budget_fmt, sizeof( budget_fmt ), "%%-%ds: %%s\n", max_str_len );
 
@@ -237,7 +237,7 @@ void GlobalSettings::Init( ProjectType project_type )
       ToStringSize( cur_template->m_Size, str_size, sizeof( str_size ) );
       printf( budget_fmt, cur_template->m_Name, str_size );
     }
-    printf("================================\n\n");
+    Log::LogInfo("================================\n\n");
 
   }
   #endif
