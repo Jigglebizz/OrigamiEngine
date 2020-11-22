@@ -5,6 +5,7 @@
 #include <chrono>
 
 #include "Origami/Util/Log.h"
+#include "Origami/Game/GlobalSettings.h"
 #include "Origami/Anim/Anim.h"
 #include "Origami/Input/Input.h"
 #include "Origami/Render/Render.h"
@@ -29,6 +30,9 @@ void LogFunction( uint8_t flags, const char* fmt, va_list args )
 void Game::Init( const char* title, const char* window_icon )
 {
   Log::RegisterCallback(LogFunction);
+
+  g_GameSettings.Init( GlobalSettings::kProjectTypeGame );
+
   AssetLoader::Init();
   Actor::Init();
   Render::Init( title, window_icon );
@@ -63,6 +67,8 @@ void Destroy()
   Anim::Destroy();
   Render::Destroy();
   AssetLoader::Destroy();
+
+  g_GameSettings.Destroy();
 }
 
 //---------------------------------------------------------------------------------

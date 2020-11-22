@@ -1,20 +1,26 @@
 #include "Origami/pch.h"
 
-#include <rapidjson.h>
 #include <fileapi.h>
 #include <string> // for stoul
 
 #include "Origami/Concurrency/Thread.h"
 #include "Origami/Filesystem/Filesystem.h"
 #include "Origami/Util/Sort.h"
+#include "Origami/Util/Search.h"
+
+#include "BuilderCommon/BuilderCommon.h"
 
 #include "Kami/AssetDb.h"
 
+DISABLE_OPTS
+
 //---------------------------------------------------------------------------------
-static constexpr uint32_t kMaxBuildersCount = 32;
-static constexpr uint8_t  kMaxExtensionLen  = 16;
+static constexpr uint32_t kMaxBuildersCount        = 32;
+static constexpr uint8_t  kMaxExtensionLen         = 16;
+static constexpr uint32_t kMaxAssetCount           = 256 * 1024;
 
 static constexpr uint32_t kKamiWorkingSetSize = 20 * 1024 * 1024; // 20 MB
+static constexpr uint32_t kBuiltVersionNew    = 0;
 
 //---------------------------------------------------------------------------------
 char g_SourcePath      [ Filesystem::kMaxPathLen ];
@@ -101,73 +107,111 @@ void LoadBuilderInfos()
 //---------------------------------------------------------------------------------
 struct AssetChangeInfo
 {
+  AssetId  m_AssetId;
   uint32_t m_ExtensionHash;
   uint32_t m_BuiltVersion;
-  AssetId  m_AssetId;
-  char*    m_Name;
-};
+  char     m_Name        [ Filesystem::kMaxAssetNameLen            ];
 
-//static constexpr uint32_t kMaxAssetChanges = 10 * 1024 * 1024; // 10 million seems like plenty for now. 240 megs out the gate for potential asset changes might be a lot tho
+  uint32_t m_DependencyCount;
+  AssetId  m_Dependencies[ BuilderCommon::kMaxAssetDependencyCount ];
+
+  uint32_t m_DependentsCount;
+  AssetId  m_Dependents  [ BuilderCommon::kMaxAssetDependencyCount ];
+};
 
 AssetChangeInfo* g_AssetChanges;
 uint32_t         g_AssetChangesCapacity;
-uint32_t         g_AssetChangeCount;
+uint32_t         g_AssetChangesCount;
 
-//---------------------------------------------------------------------------------
-void GetOutOfDateBuiltAssets()
+uint8_t          g_AssetChangesBitsetBacking[ kMaxAssetCount / 8 ];
+Bitset           g_AssetChangesBitset;
+
+void InitAssetChangesList()
 {
-  // create list of assets that are out of date
-  uint32_t asset_db_size = g_AssetDb.GetCapacity();
-  g_AssetChangesCapacity = ( asset_db_size > 0 ) ? asset_db_size : 1024;
+  g_AssetChangesCapacity     = 1024;
+  g_AssetChangesCount        = 0;
+  g_AssetChanges             = (AssetChangeInfo*)g_KamiWorkingSetHeap.Alloc( g_AssetChangesCapacity * sizeof( AssetChangeInfo ) );
 
-  g_AssetChanges         = (AssetChangeInfo*)g_KamiWorkingSetHeap.Alloc( g_AssetChangesCapacity * sizeof( AssetChangeInfo ) );
-  g_AssetChangeCount     = 0;
-
-  // scan db for builder version differences
-  uint32_t  num_changed_ids   = g_AssetChangesCapacity;
-  AssetId*  changed_asset_ids = (AssetId*)g_KamiWorkingSetHeap.Alloc( num_changed_ids * sizeof( AssetId ) );
-
-  uint32_t* current_asset_versions = (uint32_t*)g_KamiWorkingSetHeap.Alloc( g_BuilderCount * sizeof ( uint32_t ) );
-  if ( current_asset_versions == nullptr )
-  {
-    printf( "Could not allocate memory for current_asset_versions!\n");
-    return;
-  }
-
-  for ( uint32_t i_builder = 0; i_builder < g_BuilderCount; ++i_builder )
-  {
-    current_asset_versions[ i_builder ] = g_BuilderInfos[ i_builder ].m_Version;
-  }
-  QuickSort32( current_asset_versions, sizeof(uint32_t), g_BuilderCount );
-
-  g_AssetDb.GetOutOfDateAssetIds( current_asset_versions, g_BuilderCount, changed_asset_ids, &num_changed_ids );
+  g_AssetChangesBitset.InitWithBacking( g_AssetChangesBitsetBacking, kMaxAssetCount );
 }
 
 //---------------------------------------------------------------------------------
-void ScanFilesystemForNewAssets()
+void AddAssetChangeInfo( const AssetChangeInfo* info )
+{
+  uint32_t new_idx = g_AssetChangesBitset.FirstUnsetBit();
+
+  ASSERT_MSG( new_idx != -1, "Reached maximum asset count" );
+
+  if ( new_idx > g_AssetChangesCapacity )
+  {
+    g_AssetChangesCapacity += 1024;
+    g_AssetChanges = ( AssetChangeInfo* )g_KamiWorkingSetHeap.Realloc( g_AssetChanges, g_AssetChangesCapacity * sizeof( AssetChangeInfo ) );
+  }
+
+  char full_asset_path[ Filesystem::kMaxPathLen ];
+  snprintf( full_asset_path, sizeof( full_asset_path ), "%s%s", Filesystem::GetAssetsSourcePath(), info->m_Name );
+
+  AssetChangeInfo* new_change = &g_AssetChanges[new_idx];
+  memcpy_s( new_change, sizeof ( *g_AssetChanges ), info, sizeof( *info ) );
+
+  BuilderCommon::AssetCommonData asset_data;
+  BuilderCommon::ParseAsset( full_asset_path, &asset_data );
+
+  new_change->m_DependentsCount = asset_data.m_BuildDependentsCount;
+  memcpy_s( new_change->m_Dependents,   sizeof( new_change->m_Dependents ),   asset_data.m_BuildDependents,   sizeof( asset_data.m_BuildDependents )   );
+
+  new_change->m_DependencyCount = asset_data.m_LoadDependenciesCount;
+  memcpy_s( new_change->m_Dependencies, sizeof( new_change->m_Dependencies ), asset_data.m_LoadDependencies, sizeof( asset_data.m_LoadDependencies ) );
+
+  g_AssetChangesCount++;
+}
+
+//---------------------------------------------------------------------------------
+void ScanFilesystemForChangedAssets()
 {
   uint32_t* asset_extensions = (uint32_t*)g_KamiWorkingSetHeap.Alloc( sizeof(uint32_t) * g_BuilderCount );
 
-
   Filesystem::DoForEachFileInDirectory( Filesystem::GetAssetsSourcePath(), [ asset_extensions ]( const Filesystem::FileCallbackParams* file_params ) {
     
-    
+    AssetId asset_id  = AssetId::FromAssetPath( file_params->m_RelativePath );
+    uint32_t ext_hash = Crc32( file_params->m_Extension );
 
-    printf( "%s %s %s\n", file_params->m_AbsolutePath, file_params->m_RelativePath, file_params->m_Extension );
-    UNREFFED_PARAMETER( file_params );
+    size_t newest_version_idx = BinarySearch32( ext_hash, g_BuilderInfos, sizeof( g_BuilderInfos[0] ), g_BuilderCount );
+    if ( newest_version_idx == -1 )
+    {
+      // No builder for extension
+      return;
+    }
 
+    if ( g_AssetDb.Contains( asset_id ) == false )
+    {
+      AssetChangeInfo new_info;
+      new_info.m_AssetId       = asset_id;
+      new_info.m_BuiltVersion  = kBuiltVersionNew;
+      new_info.m_ExtensionHash = ext_hash;
+      strcpy_s( new_info.m_Name, file_params->m_RelativePath );
 
+      AddAssetChangeInfo( &new_info );
+    }
+    else
+    {
+      // check if asset is out of date
+      BuilderInfo* builder         = &g_BuilderInfos[ newest_version_idx ];
+      uint32_t     current_version = g_AssetDb.GetVersionFor( asset_id );
+
+      if ( current_version != builder->m_Version )
+      {
+        AssetChangeInfo new_info;
+        new_info.m_AssetId       = asset_id;
+        new_info.m_BuiltVersion  = current_version;
+        new_info.m_ExtensionHash = ext_hash;
+        strcpy_s( new_info.m_Name, file_params->m_RelativePath );
+
+        AddAssetChangeInfo( &new_info );
+      }
+    }
   }, true);
 }
-
-//---------------------------------------------------------------------------------
-//void AssetDbPersistenceThreadFunc( Thread* thread )
-//{
-//  UNREFFED_PARAMETER( thread );
-//
-//  Sleep( 10'000 );
-//  g_AssetDb.SaveToDisk();
-//}
 
 //---------------------------------------------------------------------------------
 int main( int argc, char* argv[] )
@@ -181,47 +225,38 @@ int main( int argc, char* argv[] )
   }
 
   g_KamiWorkingSetHeap.InitWithBacking( g_KamiWorkingSetBacking, sizeof( g_KamiWorkingSetBacking ), "Kami Working Set" );
+  BuilderCommon::Init();
 
   snprintf( g_BuildersDirPath, sizeof( g_BuildersDirPath ), "%s\\%s\\%s\\Builders", Filesystem::GetOutputPath(), BUILD_PLATFORM, BUILD_CONFIG );
   LoadBuilderInfos();
   g_AssetDb.Init();
   AssetDb::LoadStatus db_status = g_AssetDb.LoadFromDisk();
 
-  switch ( db_status )
-  {
-  case AssetDb::kLoadStatusDoesNotExist:
-  {
-    printf( "Asset db does not exist. Creating at %s\n", g_AssetDb.GetFilePath() );
-    g_AssetDb.SaveToDisk();
-  }
-  break;
-  case AssetDb::kLoadStatusOk:
-  {
-    printf( "Asset DB Loaded. Scanning for changes since last boot\n" );
-    GetOutOfDateBuiltAssets();
-    ScanFilesystemForNewAssets();
-  }
-  break;
-  case AssetDb::kLoadStatusFileProblem:
-  default:
+  if ( db_status != AssetDb::kLoadStatusOk && db_status != AssetDb::kLoadStatusDoesNotExist )
   {
     printf( "Problem with Asset DB. Could not run Kami!\n" );
     return 1;
   }
+
+  if ( db_status  == AssetDb::kLoadStatusDoesNotExist )
+  {
+    printf( "Asset db does not exist. Creating at %s\n", g_AssetDb.GetFilePath() );
+    g_AssetDb.SaveToDisk();
   }
 
+  InitAssetChangesList();
+
   // scan filesystem for file changes and new files
-
-
-  // Spawn asset db persistence thread
-  // TODO: not sure if this is a great way to do this. Probably better to make it more predictable.
-  //       or to use a real database...
-  // TODO: decided this isn't really helpful. It's just going to randomly pre-empt my processing.
-  //       for now, going to do something more deterministic, ie manually calling save
-  //g_AssetDbPersistenceThread.Start( &AssetDbPersistenceThreadFunc );
-
-
+  printf( "Asset DB Loaded. Scanning for changes since last boot\n" );
+  ScanFilesystemForChangedAssets();
+  printf( "Found %lu assets that need to be built\n", g_AssetChangesCount );
+  
   // create change notification handle
+
+  // start main loop
+  {
+    // spawn loop 
+  }
 
 
   // char builder_command[ Filesystem::kMaxPathLen ];
@@ -235,5 +270,7 @@ int main( int argc, char* argv[] )
 
   Sleep( 20'000 );
 
+  BuilderCommon::Destroy();
+  g_KamiWorkingSetHeap.Destroy();
   return 0;
 }

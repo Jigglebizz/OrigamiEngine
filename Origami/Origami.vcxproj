@@ -160,6 +160,7 @@
     <ClInclude Include="Concurrency\Thread.h" />
     <ClInclude Include="Filesystem\Filesystem.h" />
     <ClInclude Include="Game\Game.h" />
+    <ClInclude Include="Game\GlobalSettings.h" />
     <ClInclude Include="Input\Input.h" />
     <ClInclude Include="Math\Primitives.h" />
     <ClInclude Include="Memory\Memory.h" />
@@ -186,6 +187,7 @@
     <ClCompile Include="Concurrency\Thread.cpp" />
     <ClCompile Include="Filesystem\Filesystem.cpp" />
     <ClCompile Include="Game\Game.cpp" />
+    <ClCompile Include="Game\GlobalSettings.cpp" />
     <ClCompile Include="Input\Input.cpp" />
     <ClCompile Include="Memory\Memory.cpp" />
     <ClCompile Include="Memory\tlsf.c">

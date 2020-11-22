@@ -7,7 +7,8 @@ namespace Filesystem
 {
   //---------------------------------------------------------------------------------
   constexpr uint32_t kMaxAssetNameLen = 64;
-  constexpr uint32_t kMaxPathLen = 128;
+  constexpr uint32_t kMaxPathLen      = 128;
+  constexpr uint64_t kInvalidFilesize = (uint64_t)-1;
 
   //---------------------------------------------------------------------------------
   struct FileCallbackParams
@@ -49,7 +50,7 @@ namespace Filesystem
           Filesystem::FileCallbackParams cb_params;
           cb_params.m_AbsolutePath = file_path;
           cb_params.m_RelativePath = cb_params.m_AbsolutePath + StrLen( base_path );
-          cb_params.m_Extension    = strchr( cb_params.m_RelativePath, '.' );
+          cb_params.m_Extension    = strchr( cb_params.m_RelativePath, '.' ) + 1;
           callback( &cb_params );
         }
       }
@@ -84,6 +85,9 @@ namespace Filesystem
   const bool  ENGINE_API FileExists          ( const char* path );
   void        ENGINE_API CreateDir           ( const char* path );
   int         ENGINE_API RunCommand          ( const char* command, char* output_buf, size_t output_buf_size );
+
+  uint64_t    ENGINE_API GetFileSize         ( const char* file_path );
+  void        ENGINE_API ReadFile            ( const char* file_path, char* out_data, size_t* data_size );
 
   //---------------------------------------------------------------------------------
   template< typename FileCallback >

@@ -1,0 +1,21 @@
+{
+  "Memory":
+  {
+    "DynamicHeap":
+    {
+      "Budget" : "128MB"
+    },
+    "ScratchAlloc":
+    {
+      "Budget" : "10MB"
+    },
+    "ComponentHeap":
+    {
+      "Budget" : "32MB"
+    },
+    "AssetHeap":
+    {
+      "Budget": "512MB"
+    }
+  }
+}

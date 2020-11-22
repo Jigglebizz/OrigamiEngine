@@ -40,6 +40,7 @@ static_assert(true, "Unrecognized configuration");
 
 #if ( BUILD < BUILD_FINAL )
   #define ASSERT_MSG( exp, message ) if ( ( exp ) == 0 ) __debugbreak();
+  #define ASSERT_ALWAYS( message ) __debugbreak();
 #else
   #define ASSERT_MSG( exp, message ) UNREFFED_PARAMETER( exp );
 #endif

@@ -4,6 +4,15 @@
 
 
 //---------------------------------------------------------------------------------
+namespace Memory
+{
+  extern void* g_GlobalBacking;
+
+  void InitGlobalBacking( size_t size );
+  void DestroyGlobalBacking();
+}
+
+//---------------------------------------------------------------------------------
 void ENGINE_API MemZero( void* dst, size_t n );
 
 
@@ -40,6 +49,13 @@ void Bitset::Unset( uint32_t index )
 //---------------------------------------------------------------------------------
 // MemAllocHeap
 //---------------------------------------------------------------------------------
+struct HeapTemplate
+{
+  uint32_t     m_NameHash;
+  const char*  m_Name;
+  size_t       m_Size;
+};
+
 struct HeapAuditInfo
 {
   size_t size;
@@ -49,6 +65,7 @@ struct HeapAuditInfo
   size_t bookkeeping_mem;
 };
 
+//---------------------------------------------------------------------------------
 class MemAllocHeap
 {
 private:
@@ -68,3 +85,6 @@ public:
 
   HeapAuditInfo ENGINE_API Audit   ();
 };
+
+//---------------------------------------------------------------------------------
+extern MemAllocHeap g_DynamicHeap;

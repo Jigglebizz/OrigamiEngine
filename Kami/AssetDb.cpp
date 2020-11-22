@@ -122,6 +122,14 @@ void AssetDb::UpdateEntries( AssetId* ids, uint32_t* versions, uint32_t len )
 }
 
 //---------------------------------------------------------------------------------
+const bool AssetDb::Contains( AssetId id ) const
+{
+  ScopedLock lock( &m_Mutex );
+  size_t found_idx = BinarySearch32( id.ToU32(), m_Entries, sizeof( AssetDbEntry ), m_EntriesCount );
+  return found_idx != -1;
+}
+
+//---------------------------------------------------------------------------------
 uint32_t AssetDb::GetVersionFor( AssetId id ) const
 {
   ScopedLock lock( &m_Mutex );

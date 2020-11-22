@@ -3,8 +3,24 @@
 
 #include "Origami/Util/Log.h"
 
-#define MEMORY_LOGGING
-DISABLE_OPTS
+//#define MEMORY_LOGGING
+
+//---------------------------------------------------------------------------------
+void* Memory::g_GlobalBacking;
+MemAllocHeap g_DynamicHeap;
+
+//---------------------------------------------------------------------------------
+void Memory::InitGlobalBacking( size_t size )
+{
+  g_GlobalBacking = malloc( size );
+  g_DynamicHeap.InitWithBacking( g_GlobalBacking, size, "Dynamic Heap" );
+}
+
+void Memory::DestroyGlobalBacking()
+{
+  g_DynamicHeap.Destroy();
+  free( g_GlobalBacking );
+}
 
 //---------------------------------------------------------------------------------
 void MemZero( void* dst, size_t n )

@@ -7,6 +7,9 @@ static constexpr unsigned int StrLen(const char* str)
 }
 
 //---------------------------------------------------------------------------------
+inline void ENGINE_API StrCpy( char* dst, const char* src );
+
+//---------------------------------------------------------------------------------
 static constexpr void RemoveTrailingWhitespace( char* str, size_t len )
 {
   size_t cursor = len - 1;
@@ -14,4 +17,10 @@ static constexpr void RemoveTrailingWhitespace( char* str, size_t len )
   {
     str[ cursor-- ] = 0;
   }
+}
+
+//---------------------------------------------------------------------------------
+void StrCpy( char* dst, const char* src )
+{
+  memcpy( dst, src, StrLen(src) + 1 );
 }

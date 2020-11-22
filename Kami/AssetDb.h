@@ -37,6 +37,8 @@ public:
          void        Destroy       ();
                      
          void        UpdateEntries ( AssetId* ids, uint32_t* versions, uint32_t len );
+         
+         const bool  Contains      ( AssetId id ) const;
          uint32_t    GetVersionFor ( AssetId id ) const;
   inline uint32_t    GetNumEntries ()             const;
   inline uint32_t    GetCapacity   ()             const;

@@ -80,3 +80,27 @@ public:
   virtual AssetVersion GetAssetVersion()   const = 0;
   virtual const char*  GetAssetExtension() const = 0;
 };
+
+//---------------------------------------------------------------------------------
+namespace BuilderCommon
+{
+  static constexpr uint32_t kDynamicHeapSize = 256 * 1024 * 1024;
+  static constexpr uint32_t kMaxAssetDependencyCount = 128;
+
+  struct AssetCommonData
+  {
+    AssetId  m_BuildDependents[ kMaxAssetDependencyCount ];
+    uint32_t m_BuildDependentsCount;
+
+    AssetId  m_LoadDependencies[ kMaxAssetDependencyCount ];
+    uint32_t m_LoadDependenciesCount;
+  };
+
+  static char         g_DynamicHeapBacking[ kDynamicHeapSize ];
+  extern MemAllocHeap g_DynamicHeap;
+
+  void Init();
+  void Destroy();
+  void ParseAsset( const char* asset_file, AssetCommonData* asset_data_out );
+}
+
