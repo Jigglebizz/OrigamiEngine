@@ -84,7 +84,6 @@ public:
 //---------------------------------------------------------------------------------
 namespace BuilderCommon
 {
-  static constexpr uint32_t kDynamicHeapSize = 256 * 1024 * 1024;
   static constexpr uint32_t kMaxAssetDependencyCount = 128;
 
   struct AssetCommonData
@@ -95,9 +94,6 @@ namespace BuilderCommon
     AssetId  m_LoadDependencies[ kMaxAssetDependencyCount ];
     uint32_t m_LoadDependenciesCount;
   };
-
-  static char         g_DynamicHeapBacking[ kDynamicHeapSize ];
-  extern MemAllocHeap g_DynamicHeap;
 
   void Init();
   void Destroy();

@@ -2,6 +2,7 @@
 #include "Origami/Actor/ActorSystem.h"
 
 #include "Origami/Actor/Actor.h"
+#include "Origami/Game/GlobalSettings.h"
 #include "Origami/Util/Log.h"
 
 //---------------------------------------------------------------------------------
@@ -15,7 +16,8 @@ void Actor::Init()
   con->m_ActorInfoCount = 0;
   MemZero( &con->m_ActorInfos, sizeof( con->m_ActorInfos ) );
 
-  con->m_ComponentHeap.InitWithBacking( con->m_ComponentHeapBacking, sizeof( con->m_ComponentHeapBacking ), "Component Heap" );
+  const HeapTemplate* component_heap_template = g_GlobalSettings.GetHeapTemplate("ComponentHeap");
+  con->m_ComponentHeap.InitFromTemplate( component_heap_template );
   Log::LogInfo("Component heap contains: \n");
 
   char heap_bytes_str[ sizeof( con->m_ComponentHeap ) * 4 ];

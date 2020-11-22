@@ -5,12 +5,14 @@
 
 #include "Origami/Util/StringUtil.h"
 #include "Origami/Util/Log.h"
+#include "Origami/Game/GlobalSettings.h"
 
 
 //---------------------------------------------------------------------------------
 void AssetLoader::Init()
 {
-  m_AssetHeap.InitWithBacking( m_AssetHeapBacking, sizeof( m_AssetHeapBacking ), "Asset Heap" );
+  const HeapTemplate* asset_heap_template = g_GlobalSettings.GetHeapTemplate( "AssetHeap" );
+  m_AssetHeap.InitFromTemplate( asset_heap_template );
 }
 
 //---------------------------------------------------------------------------------

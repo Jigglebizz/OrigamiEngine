@@ -31,7 +31,7 @@ void Game::Init( const char* title, const char* window_icon )
 {
   Log::RegisterCallback(LogFunction);
 
-  g_GameSettings.Init( GlobalSettings::kProjectTypeGame );
+  g_GlobalSettings.Init( GlobalSettings::kProjectTypeGame );
 
   AssetLoader::Init();
   Actor::Init();
@@ -68,7 +68,7 @@ void Destroy()
   Render::Destroy();
   AssetLoader::Destroy();
 
-  g_GameSettings.Destroy();
+  g_GlobalSettings.Destroy();
 }
 
 //---------------------------------------------------------------------------------

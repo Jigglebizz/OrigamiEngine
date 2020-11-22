@@ -69,6 +69,7 @@ struct HeapAuditInfo
 class MemAllocHeap
 {
 private:
+  void* m_OwnedData;
 public:
   static constexpr uint32_t kMaxHeapNameSize = 32;
 
@@ -76,6 +77,7 @@ public:
   char   m_HeapName[ kMaxHeapNameSize ];
 
   void          ENGINE_API InitWithBacking ( void* data, size_t size, const char* name );
+  void          ENGINE_API InitFromTemplate( const HeapTemplate* heap_template );
   void          ENGINE_API Destroy         ();
 
   void*         ENGINE_API Alloc           ( size_t size );

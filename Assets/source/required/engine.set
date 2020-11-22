@@ -1,21 +1,23 @@
 {
   "Memory":
   {
-    "DynamicHeap":
-    {
-      "Budget" : "128MB"
+    "Common":
+     {
+      "DynamicHeap":
+      {
+        "Budget" : "128MB"
+      }
     },
-    "ScratchAlloc":
+    "Game": 
     {
-      "Budget" : "10MB"
-    },
-    "ComponentHeap":
-    {
-      "Budget" : "32MB"
-    },
-    "AssetHeap":
-    {
-      "Budget": "512MB"
+      "ComponentHeap":
+      {
+        "Budget" : "32MB"
+      },
+      "AssetHeap":
+      {
+        "Budget": "512MB"
+      }
     }
   }
 }

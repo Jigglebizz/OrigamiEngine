@@ -139,6 +139,7 @@ void MemAllocHeap::InitWithBacking( void* data, size_t size, const char* name )
   strcpy_s( m_HeapName, name );
 
   m_Tlsf = tlsf_create_with_pool( data, size );
+  m_OwnedData = nullptr;
 
 #ifdef MEMORY_LOGGING
   Log::LogInfo( "Created TLSF heap %s of size %llu. Data is at %#08x\n", name, size, data );
@@ -146,9 +147,28 @@ void MemAllocHeap::InitWithBacking( void* data, size_t size, const char* name )
 }
 
 //---------------------------------------------------------------------------------
+void MemAllocHeap::InitFromTemplate( const HeapTemplate* heap_template )
+{
+  ASSERT_MSG( StrLen( heap_template->m_Name ) <= kMaxHeapNameSize, "Heap name is too long" );
+  strcpy_s( m_HeapName, heap_template->m_Name );
+
+  m_OwnedData = g_DynamicHeap.Alloc( heap_template->m_Size );
+  m_Tlsf = tlsf_create_with_pool( m_OwnedData, heap_template->m_Size );
+
+#ifdef MEMORY_LOGGING
+  Log::LogInfo( "Created TLSF heap %s of size %llu. Data is at %#08x\n", m_Name, heap_template->m_Size, m_OwnedData );
+#endif
+}
+
+//---------------------------------------------------------------------------------
 void MemAllocHeap::Destroy()
 {
   tlsf_destroy( m_Tlsf );
+
+  if ( m_OwnedData != nullptr )
+  {
+    g_DynamicHeap.Free( m_OwnedData );
+  }
 
 #ifdef MEMORY_LOGGING
   Log::LogInfo("Destroyed TLSF heap %s\n", m_HeapName );

@@ -1,24 +1,22 @@
 #include "Origami/pch.h"
 #include "BuilderCommon.h"
 #include "Origami/Filesystem/Filesystem.h"
+#include "Origami/Game/GlobalSettings.h"
 
 #include <rapidjson/writer.h>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 
 //---------------------------------------------------------------------------------
-MemAllocHeap BuilderCommon::g_DynamicHeap;
-
-//---------------------------------------------------------------------------------
 void BuilderCommon::Init()
 {
-  g_DynamicHeap.InitWithBacking( g_DynamicHeapBacking, sizeof( g_DynamicHeapBacking ), "Builder Commong Heap" );
+  g_GlobalSettings.Init( GlobalSettings::kProjectTypeBuilder );
 }
 
 //---------------------------------------------------------------------------------
 void BuilderCommon::Destroy()
 {
-  g_DynamicHeap.Destroy();
+  g_GlobalSettings.Destroy();
 }
 
 //---------------------------------------------------------------------------------

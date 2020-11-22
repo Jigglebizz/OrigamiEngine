@@ -5,9 +5,6 @@ class ActorBase;
 namespace Actor
 {
   //---------------------------------------------------------------------------------
-  static constexpr uint32_t kComponentHeapSize = 32 * 1024 * 1024; // 32 MB
-
-  //---------------------------------------------------------------------------------
   void            Init();
   void            Destroy();
   void            UpdateFirst  ( float dt );
@@ -27,7 +24,6 @@ namespace Actor
 
   struct ActorCon
   {
-    char         m_ComponentHeapBacking[ kComponentHeapSize ];
     MemAllocHeap m_ComponentHeap;
 
     uint32_t     m_ActorInfoCount;

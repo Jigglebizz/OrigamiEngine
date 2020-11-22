@@ -12,11 +12,12 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 
-GlobalSettings g_GameSettings;
+GlobalSettings g_GlobalSettings;
 
 //---------------------------------------------------------------------------------
 static constexpr char   kMemoryDesc[] = "Memory";
 static constexpr char   kBudgetDesc[] = "Budget";
+static constexpr char   kCommonDesc[] = "Common";
 
 //---------------------------------------------------------------------------------
 size_t ParseStringSize( const char* string_size )
@@ -104,25 +105,71 @@ void ToStringSize( size_t mem_size, char* str, size_t str_len )
 }
 
 //---------------------------------------------------------------------------------
-template< typename Cb >
-void DoForEachBudget( rapidjson::Document& doc, Cb callback)
+const char* ProjectTypeToJsonDesc( GlobalSettings::ProjectType project_type )
 {
-  const rapidjson::Value& heap_templates = doc[ kMemoryDesc ];
-  for ( rapidjson::Value::ConstMemberIterator template_itr = heap_templates.MemberBegin(); template_itr != heap_templates.MemberEnd(); ++template_itr )
+  switch ( project_type )
   {
-    HeapTemplate heap_template;
+    case GlobalSettings::kProjectTypeGame:
+      return "Game";
+    case GlobalSettings::kProjectTypeBuilder:
+      return "Builder";
+    case GlobalSettings::kProjectTypeKami:
+      return "Kami";
+    default:
+      return "Unknown";
+  }
+}
 
-    heap_template.m_Name = template_itr->name.GetString();
-    const rapidjson::Value& template_value = template_itr->value;
-    for ( rapidjson::Value::ConstMemberIterator template_member_itr = template_value.MemberBegin(); template_member_itr != template_value.MemberEnd(); ++template_member_itr )
+//---------------------------------------------------------------------------------
+template< typename Cb >
+void DoForBudgetHelper( rapidjson::Value::ConstMemberIterator template_itr, Cb callback )
+{
+  HeapTemplate heap_template;
+
+  heap_template.m_Name = template_itr->name.GetString();
+  const rapidjson::Value& template_value = template_itr->value;
+  for ( rapidjson::Value::ConstMemberIterator template_member_itr = template_value.MemberBegin(); template_member_itr != template_value.MemberEnd(); ++template_member_itr )
+  {
+    const char* member_name = template_member_itr->name.GetString();
+    if ( strncmp( member_name, kBudgetDesc, sizeof( kBudgetDesc ) ) == 0 )
     {
-      const char* member_name = template_member_itr->name.GetString();
-      if ( strncmp( member_name, kBudgetDesc, sizeof( kBudgetDesc ) ) == 0 )
-      {
-        const char* budget_size_str = template_member_itr->value.GetString();
-        heap_template.m_Size = ParseStringSize( budget_size_str );
-        callback( &heap_template );
-      }
+      const char* budget_size_str = template_member_itr->value.GetString();
+      heap_template.m_Size = ParseStringSize( budget_size_str );
+      callback( &heap_template );
+    }
+  }
+}
+
+//---------------------------------------------------------------------------------
+template< typename Cb >
+void DoForEachBudget( rapidjson::Document& doc, GlobalSettings::ProjectType project_type, Cb callback)
+{
+  const char* project_type_desc = ProjectTypeToJsonDesc( project_type );
+
+  const rapidjson::Value& project_types    = doc[ kMemoryDesc ];
+  const rapidjson::Value& common_templates = project_types[ kCommonDesc ];
+  const rapidjson::Value* spec_templates   = nullptr;
+
+  if ( project_types.HasMember( project_type_desc) )
+  {
+    spec_templates = &project_types[ project_type_desc ];
+  }
+
+  for ( rapidjson::Value::ConstMemberIterator template_itr = common_templates.MemberBegin(); template_itr != common_templates.MemberEnd(); ++template_itr )
+  {
+    if ( spec_templates != nullptr && spec_templates->HasMember( template_itr->name ) )
+    {
+      continue;
+    }
+
+    DoForBudgetHelper( template_itr, callback );
+  }
+
+  if ( spec_templates != nullptr )
+  {
+    for ( rapidjson::Value::ConstMemberIterator template_itr = spec_templates->MemberBegin(); template_itr != spec_templates->MemberEnd(); ++template_itr )
+    {
+      DoForBudgetHelper( template_itr, callback );
     }
   }
 }
@@ -130,8 +177,6 @@ void DoForEachBudget( rapidjson::Document& doc, Cb callback)
 //---------------------------------------------------------------------------------
 void GlobalSettings::Init( ProjectType project_type )
 {
-  UNREFERENCED_PARAMETER( project_type );
-
   m_NumHeapTemplates = 0;
 
   char engine_settings_file[ Filesystem::kMaxPathLen ];
@@ -147,7 +192,7 @@ void GlobalSettings::Init( ProjectType project_type )
 
   size_t   total_memory_size = 0;
   uint32_t strings_size = 0;
-  DoForEachBudget( doc, [ this, &total_memory_size, &strings_size ]( const HeapTemplate* heap_template ) {
+  DoForEachBudget( doc, project_type, [ this, &total_memory_size, &strings_size ]( const HeapTemplate* heap_template ) {
     total_memory_size += heap_template->m_Size;
     strings_size      += StrLen( heap_template->m_Name ) + 1;
     m_NumHeapTemplates++;
@@ -161,7 +206,7 @@ void GlobalSettings::Init( ProjectType project_type )
   uint8_t  heap_idx = 0;
   char*    strings_ptr = m_HeapTemplateStrings;
   uint32_t max_str_len = 0;
-  DoForEachBudget( doc, [ this, &heap_idx, &strings_ptr, &max_str_len ]( const HeapTemplate* heap_template )
+  DoForEachBudget( doc, project_type, [ this, &heap_idx, &strings_ptr, &max_str_len ]( const HeapTemplate* heap_template )
   {
     uint32_t str_len = StrLen( heap_template->m_Name ) + 1;
     max_str_len = ( str_len > max_str_len ) ? str_len : max_str_len;

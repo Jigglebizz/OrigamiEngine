@@ -4,9 +4,6 @@
 
 namespace AssetLoader
 {
-  static constexpr uint32_t kAssetHeapSize = 512 * 1024 * 1024; // 1GB of loaded assets
-
-  static char         m_AssetHeapBacking[ kAssetHeapSize ];
   static MemAllocHeap m_AssetHeap;
 
   struct BasicAsset
