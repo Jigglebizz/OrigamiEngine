@@ -81,6 +81,9 @@ void ToStringSize( size_t mem_size, char* str, size_t str_len )
   const char* order_prefix = "";
   switch ( order_of_magnitude )
   {
+  case 0:
+    order_prefix = "";
+    break;
   case 1:
     order_prefix = "K";
     break;
