@@ -263,7 +263,29 @@ void Filesystem::WatchDirectoryForChangesThreadFunction( Thread* thread, void* p
       WideCharToMultiByte(CP_ACP, 0, pNotify->FileName, pNotify->FileNameLength / 2, filename, sizeof(filename), NULL, NULL);
       filename[ pNotify->FileNameLength / 2 ] = '\0';
 
-      callback( filename );
+      WatchDirectoryChangeType change_type = kWatchDirectoryChangeTypeUnknown;
+      switch ( pNotify->Action )
+      {
+      case FILE_ACTION_ADDED:
+        change_type = kWatchDirectoryChangeTypeAdded;
+        break;
+      case FILE_ACTION_REMOVED:
+        change_type = kWatchDirectoryChangeTypeRemoved;
+        break;
+      case FILE_ACTION_MODIFIED:
+        change_type = kWatchDirectoryChangeTypeModified;
+        break;
+      case FILE_ACTION_RENAMED_OLD_NAME:
+        change_type = kWatchDirectoryChangeTypeRenamedOld;
+        break;
+      case FILE_ACTION_RENAMED_NEW_NAME:
+        change_type = kWatchDirectoryChangeTypeRenamedNew;
+        break;
+      default:
+        break;
+      }
+
+      callback( filename, change_type );
 
       offset += pNotify->NextEntryOffset;
           //case FILE_ACTION_ADDED:

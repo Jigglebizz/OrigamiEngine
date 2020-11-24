@@ -13,7 +13,16 @@ namespace Filesystem
   constexpr uint64_t kInvalidFilesize = (uint64_t)-1;
 
   //---------------------------------------------------------------------------------
-  typedef void(*WatchDirectoryCallback)( const char* );
+  enum WatchDirectoryChangeType : uint8_t
+  {
+    kWatchDirectoryChangeTypeUnknown,
+    kWatchDirectoryChangeTypeAdded,
+    kWatchDirectoryChangeTypeRemoved,
+    kWatchDirectoryChangeTypeModified,
+    kWatchDirectoryChangeTypeRenamedOld,
+    kWatchDirectoryChangeTypeRenamedNew,
+  };
+  typedef void(*WatchDirectoryCallback)( const char*, WatchDirectoryChangeType );
   struct WatchDirectoryForChangesParams
   {
     char                   m_Directory[ kMaxPathLen ];

@@ -209,10 +209,20 @@ void ScanFilesystemForChangedAssets()
   }, true);
 }
 
-//---------------------------------------------------------------------------------
-void FileChangedCallback( const char* filename )
+const char* change_names[] =
 {
-  printf( "file changed: %s\n", filename );
+  "Unknown",
+  "Added",
+  "Removed",
+  "Modified",
+  "Renamed Old",
+  "Renamed New"
+};
+
+//---------------------------------------------------------------------------------
+void FileChangedCallback( const char* filename, Filesystem::WatchDirectoryChangeType change_type )
+{
+  printf( "file %s: %s\n", change_names[change_type], filename );
 }
 
 //---------------------------------------------------------------------------------
