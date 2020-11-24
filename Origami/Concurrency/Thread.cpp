@@ -7,6 +7,7 @@ Thread::Thread( )
   , m_SystemThreadHandle( nullptr )
   , m_Flags( 0x00 )
   , m_Function( nullptr )
+  , m_FunctionParams( nullptr )
 {
 }
 
@@ -19,7 +20,7 @@ static DWORD WINAPI StaticThreadExecute( void* param )
 }
 
 //---------------------------------------------------------------------------------
-void Thread::Start( ThreadFunction function )
+void Thread::Start( ThreadFunction function, void* params )
 {
   if ( function != kLastFunction )
   {
@@ -27,6 +28,8 @@ void Thread::Start( ThreadFunction function )
   }
 
   assert( function && "Function cannot be nullptr" );
+
+  m_FunctionParams = params;
 
   m_SystemThreadHandle = CreateThread(
     NULL,
@@ -51,7 +54,7 @@ void Thread::ThreadExecute()
   m_Flags |= kAlive;
   while ( ( m_Flags & kRequestStop ) == 0 || ( m_Flags & kActiveRequest ) )
   {
-    m_Function( this );
+    m_Function( this, m_FunctionParams );
   }
   m_Flags &= ~( kAlive | kRequestStop );
 }
@@ -79,6 +82,12 @@ void Thread::Join()
 const bool Thread::Joinable() const
 {
   return ( m_Flags & ( kAlive | kRequestStop ) ) == 0;
+}
+
+//---------------------------------------------------------------------------------
+const bool Thread::StopRequested() const
+{
+  return ( m_Flags & kRequestStop ) != 0;
 }
 
 //---------------------------------------------------------------------------------

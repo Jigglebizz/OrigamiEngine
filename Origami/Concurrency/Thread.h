@@ -1,7 +1,7 @@
 #pragma once
 
 class Thread;
-typedef void(*ThreadFunction)( Thread* );
+typedef void(*ThreadFunction)( Thread*, void* );
 
 //---------------------------------------------------------------------------------
 class Thread
@@ -21,6 +21,7 @@ private:
   HANDLE          m_SystemThreadHandle;
   uint8_t         m_Flags;
   ThreadFunction  m_Function;
+  void*           m_FunctionParams;
 
   friend static DWORD WINAPI StaticThreadExecute(void* param);
   void ThreadExecute( );
@@ -29,11 +30,12 @@ public:
 
   Thread( );
 
-         void    Start           ( ThreadFunction func = kLastFunction );
+         void    Start           ( ThreadFunction func = kLastFunction, void* params = nullptr );
          void    RequestStop     ( );
   const  bool    Stopped         ( ) const;
          void    Join            ( );
   const  bool    Joinable        ( ) const;
+  const  bool    StopRequested   ( ) const;
                  
   inline void    EnsureRequests  ( );
   inline void    ReceiptRequests ( );

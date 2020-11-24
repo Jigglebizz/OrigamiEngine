@@ -13,6 +13,7 @@ MemAllocHeap g_DynamicHeap;
 void Memory::InitGlobalBacking( size_t size )
 {
   g_GlobalBacking = malloc( size );
+  ASSERT_MSG( g_GlobalBacking != nullptr, "Could not allocate memory." );
   g_DynamicHeap.InitWithBacking( g_GlobalBacking, size, "Dynamic Heap" );
 }
 

@@ -12,6 +12,8 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 
+DISABLE_OPTS
+
 GlobalSettings g_GlobalSettings;
 
 //---------------------------------------------------------------------------------
@@ -186,7 +188,7 @@ void GlobalSettings::Init( ProjectType project_type )
   char* engine_settings_file_contents = (char*)malloc( file_size );
 
   Filesystem::ReadFile( engine_settings_file, engine_settings_file_contents, &file_size );
-  
+
   rapidjson::Document doc;
   doc.Parse< rapidjson::kParseStopWhenDoneFlag >( engine_settings_file_contents );
 
@@ -221,7 +223,7 @@ void GlobalSettings::Init( ProjectType project_type )
     heap_idx++;
   } );
 
-  QuickSort32( m_HeapTemplates, sizeof( HeapTemplate ), m_NumHeapTemplates );
+  QuickSort32( &m_HeapTemplates[ 0 ], sizeof( HeapTemplate ), m_NumHeapTemplates );
 
   #if BUILD < BUILD_FINAL
   {
@@ -235,7 +237,7 @@ void GlobalSettings::Init( ProjectType project_type )
       HeapTemplate* cur_template = &m_HeapTemplates[ i_template ];
       char str_size[32];
       ToStringSize( cur_template->m_Size, str_size, sizeof( str_size ) );
-      printf( budget_fmt, cur_template->m_Name, str_size );
+      Log::LogInfo (budget_fmt, cur_template->m_Name, str_size);
     }
     Log::LogInfo("================================\n\n");
 

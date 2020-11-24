@@ -7,6 +7,8 @@
 #include "Origami/Filesystem/Filesystem.h"
 #include "Origami/Util/Sort.h"
 #include "Origami/Util/Search.h"
+#include "Origami/Game/GlobalSettings.h"
+#include "Origami/Util/Log.h"
 
 #include "BuilderCommon/BuilderCommon.h"
 
@@ -18,16 +20,11 @@ static constexpr uint32_t kMaxBuildersCount        = 32;
 static constexpr uint8_t  kMaxExtensionLen         = 16;
 static constexpr uint32_t kMaxAssetCount           = 256 * 1024;
 
-static constexpr uint32_t kKamiWorkingSetSize = 20 * 1024 * 1024; // 20 MB
 static constexpr uint32_t kBuiltVersionNew    = 0;
 
 //---------------------------------------------------------------------------------
 char g_SourcePath      [ Filesystem::kMaxPathLen ];
 char g_BuildersDirPath [ Filesystem::kMaxPathLen ];
-
-//---------------------------------------------------------------------------------
-char         g_KamiWorkingSetBacking[ kKamiWorkingSetSize ];
-MemAllocHeap g_KamiWorkingSetHeap;
 
 //---------------------------------------------------------------------------------
 AssetDb g_AssetDb;
@@ -129,7 +126,7 @@ void InitAssetChangesList()
 {
   g_AssetChangesCapacity     = 1024;
   g_AssetChangesCount        = 0;
-  g_AssetChanges             = (AssetChangeInfo*)g_KamiWorkingSetHeap.Alloc( g_AssetChangesCapacity * sizeof( AssetChangeInfo ) );
+  g_AssetChanges             = (AssetChangeInfo*)g_DynamicHeap.Alloc( g_AssetChangesCapacity * sizeof( AssetChangeInfo ) );
 
   g_AssetChangesBitset.InitWithBacking( g_AssetChangesBitsetBacking, kMaxAssetCount );
 }
@@ -144,7 +141,7 @@ void AddAssetChangeInfo( const AssetChangeInfo* info )
   if ( new_idx > g_AssetChangesCapacity )
   {
     g_AssetChangesCapacity += 1024;
-    g_AssetChanges = ( AssetChangeInfo* )g_KamiWorkingSetHeap.Realloc( g_AssetChanges, g_AssetChangesCapacity * sizeof( AssetChangeInfo ) );
+    g_AssetChanges = ( AssetChangeInfo* )g_DynamicHeap.Realloc( g_AssetChanges, g_AssetChangesCapacity * sizeof( AssetChangeInfo ) );
   }
 
   char full_asset_path[ Filesystem::kMaxPathLen ];
@@ -168,7 +165,7 @@ void AddAssetChangeInfo( const AssetChangeInfo* info )
 //---------------------------------------------------------------------------------
 void ScanFilesystemForChangedAssets()
 {
-  uint32_t* asset_extensions = (uint32_t*)g_KamiWorkingSetHeap.Alloc( sizeof(uint32_t) * g_BuilderCount );
+  uint32_t* asset_extensions = (uint32_t*)g_DynamicHeap.Alloc( sizeof(uint32_t) * g_BuilderCount );
 
   Filesystem::DoForEachFileInDirectory( Filesystem::GetAssetsSourcePath(), [ asset_extensions ]( const Filesystem::FileCallbackParams* file_params ) {
     
@@ -213,6 +210,12 @@ void ScanFilesystemForChangedAssets()
 }
 
 //---------------------------------------------------------------------------------
+void FileChangedCallback( const char* filename )
+{
+  printf( "file changed: %s\n", filename );
+}
+
+//---------------------------------------------------------------------------------
 int main( int argc, char* argv[] )
 {
   UNREFFED_PARAMETER( argc );
@@ -223,8 +226,7 @@ int main( int argc, char* argv[] )
     Filesystem::CreateDir( Filesystem::GetAssetsBuiltPath() );
   }
 
-  g_KamiWorkingSetHeap.InitWithBacking( g_KamiWorkingSetBacking, sizeof( g_KamiWorkingSetBacking ), "Kami Working Set" );
-  BuilderCommon::Init();
+  g_GlobalSettings.Init( GlobalSettings::kProjectTypeKami );
 
   snprintf( g_BuildersDirPath, sizeof( g_BuildersDirPath ), "%s\\%s\\%s\\Builders", Filesystem::GetOutputPath(), BUILD_PLATFORM, BUILD_CONFIG );
   LoadBuilderInfos();
@@ -251,10 +253,12 @@ int main( int argc, char* argv[] )
   printf( "Found %lu assets that need to be built\n", g_AssetChangesCount );
   
   // create change notification handle
+  Thread fs_watch_thread;
+  Filesystem::WatchDirectoryForChanges( Filesystem::GetAssetsSourcePath(), &fs_watch_thread, &FileChangedCallback );
 
   // start main loop
   {
-    // spawn loop 
+    // spawn loop
   }
 
 
@@ -267,9 +271,9 @@ int main( int argc, char* argv[] )
   //  g_AssetDbPersistenceThread.Join();
   //}
 
-  Sleep( 20'000 );
+  Sleep( 200'000 );
 
   BuilderCommon::Destroy();
-  g_KamiWorkingSetHeap.Destroy();
+  g_GlobalSettings.Destroy();
   return 0;
 }

@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 
+#include "Origami/Concurrency/Thread.h"
+
 namespace Filesystem
 {
   //---------------------------------------------------------------------------------
@@ -11,12 +13,23 @@ namespace Filesystem
   constexpr uint64_t kInvalidFilesize = (uint64_t)-1;
 
   //---------------------------------------------------------------------------------
+  typedef void(*WatchDirectoryCallback)( const char* );
+  struct WatchDirectoryForChangesParams
+  {
+    char                   m_Directory[ kMaxPathLen ];
+    WatchDirectoryCallback m_Callback;
+  };
+  
+  //---------------------------------------------------------------------------------
   struct FileCallbackParams
   {
     const char* m_AbsolutePath;
     const char* m_RelativePath;
     const char* m_Extension;
   };
+
+  //---------------------------------------------------------------------------------
+  void WatchDirectoryForChangesThreadFunction( Thread* thread, void* params );
 
   //---------------------------------------------------------------------------------
   template< typename FileCb >
@@ -88,6 +101,8 @@ namespace Filesystem
 
   uint64_t    ENGINE_API GetFileSize         ( const char* file_path );
   void        ENGINE_API ReadFile            ( const char* file_path, char* out_data, size_t* data_size );
+
+  void        ENGINE_API WatchDirectoryForChanges( const char* directory, Thread* thread, WatchDirectoryCallback callback );
 
   //---------------------------------------------------------------------------------
   template< typename FileCallback >

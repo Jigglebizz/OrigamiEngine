@@ -16,13 +16,17 @@ void Log::RegisterCallback( Log::LogCallbackFunction callback )
 void Log::LogInfo( const char* fmt, ... )
 {
 #if ( BUILD < BUILD_FINAL )
-  if ( s_CallbackFunction != nullptr )
-  {
     va_list args;
     va_start( args, fmt );
-    s_CallbackFunction( kLogLevelInfo, fmt, args );
+    if (s_CallbackFunction != nullptr)
+    {
+      s_CallbackFunction( kLogLevelInfo, fmt, args );
+    }
+    else
+    {
+      vprintf( fmt, args );
+    }
     va_end( args );
-  }
 #else
   UNREFFED_PARAMETER( fmt );
 #endif
