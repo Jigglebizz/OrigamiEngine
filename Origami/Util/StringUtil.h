@@ -22,5 +22,5 @@ static constexpr void RemoveTrailingWhitespace( char* str, size_t len )
 //---------------------------------------------------------------------------------
 void StrCpy( char* dst, const char* src )
 {
-  memcpy( dst, src, StrLen(src) + 1 );
+  memcpy( dst, src, (size_t)StrLen( src ) + 1 );
 }

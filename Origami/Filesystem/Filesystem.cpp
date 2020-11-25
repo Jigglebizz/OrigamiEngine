@@ -126,9 +126,9 @@ VOID CALLBACK FileIoCompletionRoutine(
   __in  DWORD dwNumberOfBytesTransfered,
   __in  LPOVERLAPPED lpOverlapped )
  {
-  UNREFERENCED_PARAMETER( dwErrorCode );
-  UNREFERENCED_PARAMETER( dwNumberOfBytesTransfered );
-  UNREFERENCED_PARAMETER( lpOverlapped );
+  UNREFFED_PARAMETER( dwErrorCode );
+  UNREFFED_PARAMETER( dwNumberOfBytesTransfered );
+  UNREFFED_PARAMETER( lpOverlapped );
  }
 
 //---------------------------------------------------------------------------------

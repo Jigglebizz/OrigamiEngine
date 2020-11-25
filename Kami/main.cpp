@@ -8,18 +8,16 @@
 #include "Origami/Util/Sort.h"
 #include "Origami/Util/Search.h"
 #include "Origami/Game/GlobalSettings.h"
-#include "Origami/Util/Log.h"
 #include "Origami/Arch/ArchWin.h"
-
-#include "BuilderCommon/BuilderCommon.h"
+#include "Origami/Asset/AssetVersions.h"
 
 #include "Kami/AssetDb.h"
+#include "Kami/AssetChanges.h"
 
 
 //---------------------------------------------------------------------------------
-static constexpr uint32_t kMaxBuildersCount        = 32;
-static constexpr uint8_t  kMaxExtensionLen         = 16;
-static constexpr uint32_t kMaxAssetCount           = 256 * 1024;
+static constexpr uint32_t kMaxBuildersCount   = 32;
+static constexpr uint8_t  kMaxExtensionLen    = 16;
 
 static constexpr uint32_t kBuiltVersionNew    = 0;
 
@@ -37,81 +35,14 @@ struct BuilderInfo
 uint32_t    g_BuilderCount = 0;
 BuilderInfo g_BuilderInfos[ kMaxBuildersCount ];
 
-
-
-//---------------------------------------------------------------------------------
-struct AssetChangeInfo
-{
-  AssetId  m_AssetId;
-  uint32_t m_ExtensionHash;
-  uint32_t m_BuiltVersion;
-  char     m_Name        [ Filesystem::kMaxAssetNameLen            ];
-
-  uint32_t m_DependencyCount;
-  AssetId  m_Dependencies[ BuilderCommon::kMaxAssetDependencyCount ];
-
-  uint32_t m_DependentsCount;
-  AssetId  m_Dependents  [ BuilderCommon::kMaxAssetDependencyCount ];
-};
-
-//---------------------------------------------------------------------------------
-AssetChangeInfo* g_AssetChanges;
-uint32_t         g_AssetChangesCapacity;
-uint32_t         g_AssetChangesCount;
-Mutex            g_AssetChangesMutex;
-
 uint32_t         g_NumRunningBuilders;
 uint32_t         g_NumCores;
-uint8_t          g_AssetChangesBitsetBacking[ kMaxAssetCount / 8 ];
-Bitset           g_AssetChangesBitset;
 
 char             g_SourcePath     [ Filesystem::kMaxPathLen ];
 char             g_BuildersDirPath[ Filesystem::kMaxPathLen ];
 
 AssetDb          g_AssetDb;
 
-void InitAssetChangesList()
-{
-  g_AssetChangesCapacity     = 1024;
-  g_AssetChangesCount        = 0;
-  g_AssetChanges             = (AssetChangeInfo*)g_DynamicHeap.Alloc( g_AssetChangesCapacity * sizeof( AssetChangeInfo ) );
-
-  g_AssetChangesBitset.InitWithBacking( g_AssetChangesBitsetBacking, kMaxAssetCount );
-  g_AssetChangesMutex.Init( "Kami Asset Changes" );
-}
-
-//---------------------------------------------------------------------------------
-void AddAssetChangeInfo( const AssetChangeInfo* info )
-{
-  uint32_t new_idx = g_AssetChangesBitset.FirstUnsetBit();
-
-  ASSERT_MSG( new_idx != -1, "Reached maximum asset count" );
-
-  ScopedLock asset_change_lock( &g_AssetChangesMutex );
-
-  if ( new_idx > g_AssetChangesCapacity )
-  {
-    g_AssetChangesCapacity += 1024;
-    g_AssetChanges = ( AssetChangeInfo* )g_DynamicHeap.Realloc( g_AssetChanges, g_AssetChangesCapacity * sizeof( AssetChangeInfo ) );
-  }
-
-  char full_asset_path[ Filesystem::kMaxPathLen ];
-  snprintf( full_asset_path, sizeof( full_asset_path ), "%s%s", Filesystem::GetAssetsSourcePath(), info->m_Name );
-
-  AssetChangeInfo* new_change = &g_AssetChanges[new_idx];
-  memcpy_s( new_change, sizeof ( *g_AssetChanges ), info, sizeof( *info ) );
-
-  BuilderCommon::AssetCommonData asset_data;
-  BuilderCommon::ParseAsset( full_asset_path, &asset_data );
-
-  new_change->m_DependentsCount = asset_data.m_BuildDependentsCount;
-  memcpy_s( new_change->m_Dependents,   sizeof( new_change->m_Dependents ),   asset_data.m_BuildDependents,   sizeof( asset_data.m_BuildDependents )   );
-
-  new_change->m_DependencyCount = asset_data.m_LoadDependenciesCount;
-  memcpy_s( new_change->m_Dependencies, sizeof( new_change->m_Dependencies ), asset_data.m_LoadDependencies, sizeof( asset_data.m_LoadDependencies ) );
-
-  g_AssetChangesCount++;
-}
 
 //---------------------------------------------------------------------------------
 void ScanFilesystemForChangedAssets()
@@ -132,13 +63,13 @@ void ScanFilesystemForChangedAssets()
 
     if ( g_AssetDb.Contains( asset_id ) == false )
     {
-      AssetChangeInfo new_info;
+      AssetChanges::AssetChangeInfo new_info;
       new_info.m_AssetId       = asset_id;
       new_info.m_BuiltVersion  = kBuiltVersionNew;
       new_info.m_ExtensionHash = ext_hash;
       strcpy_s( new_info.m_Name, file_params->m_RelativePath );
 
-      AddAssetChangeInfo( &new_info );
+      AssetChanges::AddAssetChangeInfo( &new_info );
     }
     else
     {
@@ -148,13 +79,13 @@ void ScanFilesystemForChangedAssets()
 
       if ( current_version != builder->m_VersionHash )
       {
-        AssetChangeInfo new_info;
+        AssetChanges::AssetChangeInfo new_info;
         new_info.m_AssetId       = asset_id;
         new_info.m_BuiltVersion  = current_version;
         new_info.m_ExtensionHash = ext_hash;
         strcpy_s( new_info.m_Name, file_params->m_RelativePath );
 
-        AddAssetChangeInfo( &new_info );
+        AssetChanges::AddAssetChangeInfo( &new_info );
       }
     }
   }, true);
@@ -185,13 +116,13 @@ void FileChangedCallback( const char* filename, Filesystem::WatchDirectoryChange
   AssetId asset_id = AssetId::FromAssetPath( filename );
   if ( change_type == Filesystem::kWatchDirectoryChangeTypeAdded || change_type == Filesystem::kWatchDirectoryChangeTypeModified || change_type == Filesystem::kWatchDirectoryChangeTypeRenamedNew )
   {
-    AssetChangeInfo new_info;
+    AssetChanges::AssetChangeInfo new_info;
     new_info.m_AssetId = asset_id;
     new_info.m_BuiltVersion = kBuiltVersionNew;
     new_info.m_ExtensionHash = ext_hash;
     strcpy_s( new_info.m_Name, filename );
 
-    AddAssetChangeInfo(&new_info);
+    AssetChanges::AddAssetChangeInfo(&new_info);
     printf( "Added %s : 0x%8x to asset build list\n", filename, asset_id.ToU32() );
   }
 
@@ -262,6 +193,7 @@ void LoadBuilderInfos()
   putchar( '\n' );
 }
 
+//---------------------------------------------------------------------------------
 int Init()
 {
   if ( Filesystem::FileExists( Filesystem::GetAssetsBuiltPath()) == false )
@@ -275,14 +207,22 @@ int Init()
 
   snprintf( g_BuildersDirPath, sizeof( g_BuildersDirPath ), "%s\\%s\\%s\\Builders", Filesystem::GetOutputPath(), BUILD_PLATFORM, BUILD_CONFIG );
   g_AssetDb.Init();
-  InitAssetChangesList();
+  AssetChanges::Init();
 
   return 0;
 }
 
+//---------------------------------------------------------------------------------
+void Destroy()
+{
+  AssetChanges::Destroy();
+  g_AssetDb.Destroy();
+  g_GlobalSettings.Destroy();
+}
+
+//---------------------------------------------------------------------------------
 int LoadConfig()
 {
-  
   LoadBuilderInfos();
   AssetDb::LoadStatus db_status = g_AssetDb.LoadFromDisk();
 
@@ -324,7 +264,7 @@ int main( int argc, char* argv[] )
   // scan filesystem for file changes and new files
   printf( "Scanning for changes since last boot\n" );
   ScanFilesystemForChangedAssets();
-  printf( "Found %lu assets that need to be built\n", g_AssetChangesCount );
+  printf( "Found %lu assets that need to be built\n", AssetChanges::GetChangeCount() );
   
   // create change notification handle
   Thread fs_watch_thread;
@@ -340,8 +280,7 @@ int main( int argc, char* argv[] )
   while ( fs_watch_thread.Joinable() == false );
   fs_watch_thread.Join();
 
-  BuilderCommon::Destroy();
-  g_GlobalSettings.Destroy();
+  Destroy();
   return 0;
 }
 
