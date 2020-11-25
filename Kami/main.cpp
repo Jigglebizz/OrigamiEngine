@@ -9,6 +9,7 @@
 #include "Origami/Util/Search.h"
 #include "Origami/Game/GlobalSettings.h"
 #include "Origami/Util/Log.h"
+#include "Origami/Arch/ArchWin.h"
 
 #include "BuilderCommon/BuilderCommon.h"
 
@@ -23,82 +24,20 @@ static constexpr uint32_t kMaxAssetCount           = 256 * 1024;
 static constexpr uint32_t kBuiltVersionNew    = 0;
 
 //---------------------------------------------------------------------------------
-char g_SourcePath      [ Filesystem::kMaxPathLen ];
-char g_BuildersDirPath [ Filesystem::kMaxPathLen ];
-
-//---------------------------------------------------------------------------------
-AssetDb g_AssetDb;
-Thread  g_AssetDbPersistenceThread;
-
-//---------------------------------------------------------------------------------
 struct BuilderInfo
 {
-  uint32_t m_ExtensionHash;
-  uint32_t m_Version;
-  char     m_Path      [ Filesystem::kMaxPathLen ];
-  char     m_Extension [ kMaxExtensionLen ];
+  uint32_t      m_ExtensionHash;
+  uint32_t      m_VersionHash;
+  char          m_VersionDesc[ AssetVersion::kMaxDescriptionLen ];
+  char          m_Path       [ Filesystem::kMaxPathLen ];
+  char          m_Extension  [ kMaxExtensionLen ];
 };
 
 //---------------------------------------------------------------------------------
 uint32_t    g_BuilderCount = 0;
 BuilderInfo g_BuilderInfos[ kMaxBuildersCount ];
 
-//---------------------------------------------------------------------------------
-void LoadBuilderInfos()
-{
-  char builders_glob[ Filesystem::kMaxPathLen ];
-  snprintf( builders_glob, sizeof( builders_glob ), "%s\\*.exe", g_BuildersDirPath );
 
-  WIN32_FIND_DATA find_file_data;
-  HANDLE hFind = FindFirstFile( builders_glob, &find_file_data );
-  if ( hFind == INVALID_HANDLE_VALUE )
-  {
-    printf( "FindFirstFile failed %d. Are there any builders that match %s?\n", GetLastError(), builders_glob );
-    return;
-  }
-
-  char builder_info_output  [ 128 ];
-  char builder_info_command [ Filesystem::kMaxPathLen ];
-  do
-  {
-    MemZero( builder_info_output, sizeof( builder_info_output ) );
-    BuilderInfo* info = &g_BuilderInfos[ g_BuilderCount++ ];
-
-    snprintf( info->m_Path,         sizeof( info->m_Path ),         "%s\\%s",      g_BuildersDirPath, find_file_data.cFileName );
-    snprintf( builder_info_command, sizeof( builder_info_command ), "%s -version", info->m_Path );
-    Filesystem::RunCommand( builder_info_command, builder_info_output, sizeof( builder_info_output ) );
-
-    info->m_Version = std::stoul( builder_info_output, nullptr, 0x10 );
-
-    snprintf( builder_info_command, sizeof( builder_info_command ), "%s -extension", info->m_Path );
-    Filesystem::RunCommand( builder_info_command, info->m_Extension, sizeof( info->m_Extension ) );
-
-    RemoveTrailingWhitespace( info->m_Extension, StrLen( info->m_Extension ) );
-
-    info->m_ExtensionHash = Crc32( info->m_Extension );
-
-  } while ( FindNextFile( hFind, &find_file_data ) != 0 );
-
-  QuickSort32( &g_BuilderInfos, sizeof( BuilderInfo ), g_BuilderCount );
-  
-  for ( uint32_t i_sep = 0; i_sep < 44; ++i_sep )
-  {
-    putchar('=');
-  }
-  putchar( '\n' );
-  printf( "  Builder Info\n" );
-  for (uint32_t i_sep = 0; i_sep < 44; ++i_sep)
-  {
-    putchar('=');
-  }
-  putchar('\n');
-  for ( uint32_t i_builder = 0; i_builder < g_BuilderCount; ++i_builder )
-  {
-    BuilderInfo* info = &g_BuilderInfos[ i_builder ];
-    printf("ext: .%-17s version: %#08x\n", info->m_Extension, info->m_Version );
-  }
-  putchar( '\n' );
-}
 
 //---------------------------------------------------------------------------------
 struct AssetChangeInfo
@@ -115,12 +54,21 @@ struct AssetChangeInfo
   AssetId  m_Dependents  [ BuilderCommon::kMaxAssetDependencyCount ];
 };
 
+//---------------------------------------------------------------------------------
 AssetChangeInfo* g_AssetChanges;
 uint32_t         g_AssetChangesCapacity;
 uint32_t         g_AssetChangesCount;
+Mutex            g_AssetChangesMutex;
 
+uint32_t         g_NumRunningBuilders;
+uint32_t         g_NumCores;
 uint8_t          g_AssetChangesBitsetBacking[ kMaxAssetCount / 8 ];
 Bitset           g_AssetChangesBitset;
+
+char             g_SourcePath     [ Filesystem::kMaxPathLen ];
+char             g_BuildersDirPath[ Filesystem::kMaxPathLen ];
+
+AssetDb          g_AssetDb;
 
 void InitAssetChangesList()
 {
@@ -129,6 +77,7 @@ void InitAssetChangesList()
   g_AssetChanges             = (AssetChangeInfo*)g_DynamicHeap.Alloc( g_AssetChangesCapacity * sizeof( AssetChangeInfo ) );
 
   g_AssetChangesBitset.InitWithBacking( g_AssetChangesBitsetBacking, kMaxAssetCount );
+  g_AssetChangesMutex.Init( "Kami Asset Changes" );
 }
 
 //---------------------------------------------------------------------------------
@@ -137,6 +86,8 @@ void AddAssetChangeInfo( const AssetChangeInfo* info )
   uint32_t new_idx = g_AssetChangesBitset.FirstUnsetBit();
 
   ASSERT_MSG( new_idx != -1, "Reached maximum asset count" );
+
+  ScopedLock asset_change_lock( &g_AssetChangesMutex );
 
   if ( new_idx > g_AssetChangesCapacity )
   {
@@ -195,7 +146,7 @@ void ScanFilesystemForChangedAssets()
       BuilderInfo* builder         = &g_BuilderInfos[ newest_version_idx ];
       uint32_t     current_version = g_AssetDb.GetVersionFor( asset_id );
 
-      if ( current_version != builder->m_Version )
+      if ( current_version != builder->m_VersionHash )
       {
         AssetChangeInfo new_info;
         new_info.m_AssetId       = asset_id;
@@ -222,25 +173,117 @@ const char* change_names[] =
 //---------------------------------------------------------------------------------
 void FileChangedCallback( const char* filename, Filesystem::WatchDirectoryChangeType change_type )
 {
-  printf( "file %s: %s\n", change_names[change_type], filename );
+  const char* extension   = Filesystem::GetExtension( filename );
+  uint32_t    ext_hash    = Crc32( extension );
+  size_t      builder_idx = BinarySearch32( ext_hash, g_BuilderInfos, sizeof( g_BuilderInfos[0] ), g_BuilderCount );
+
+  if ( builder_idx == -1 )
+  {
+    return;
+  }
+
+  AssetId asset_id = AssetId::FromAssetPath( filename );
+  if ( change_type == Filesystem::kWatchDirectoryChangeTypeAdded || change_type == Filesystem::kWatchDirectoryChangeTypeModified || change_type == Filesystem::kWatchDirectoryChangeTypeRenamedNew )
+  {
+    AssetChangeInfo new_info;
+    new_info.m_AssetId = asset_id;
+    new_info.m_BuiltVersion = kBuiltVersionNew;
+    new_info.m_ExtensionHash = ext_hash;
+    strcpy_s( new_info.m_Name, filename );
+
+    AddAssetChangeInfo(&new_info);
+    printf( "Added %s : 0x%8x to asset build list\n", filename, asset_id.ToU32() );
+  }
+
+  //printf( "file %s: %s\n", change_names[change_type], filename );
 }
 
 //---------------------------------------------------------------------------------
-int main( int argc, char* argv[] )
+void LoadBuilderInfos()
 {
-  UNREFFED_PARAMETER( argc );
-  UNREFFED_PARAMETER( argv );
+  char builders_glob[ Filesystem::kMaxPathLen ];
+  snprintf( builders_glob, sizeof( builders_glob ), "%s\\*.exe", g_BuildersDirPath );
 
+  WIN32_FIND_DATA find_file_data;
+  HANDLE hFind = FindFirstFile( builders_glob, &find_file_data );
+  if ( hFind == INVALID_HANDLE_VALUE )
+  {
+    printf( "FindFirstFile failed %d. Are there any builders that match %s?\n", GetLastError(), builders_glob );
+    return;
+  }
+
+  char builder_info_output  [ 128 ];
+  char builder_info_command [ Filesystem::kMaxPathLen ];
+  do
+  {
+    MemZero( builder_info_output, sizeof( builder_info_output ) );
+    BuilderInfo* info = &g_BuilderInfos[ g_BuilderCount++ ];
+
+    snprintf( info->m_Path,         sizeof( info->m_Path ),         "%s\\%s",      g_BuildersDirPath, find_file_data.cFileName );
+    snprintf( builder_info_command, sizeof( builder_info_command ), "%s -version", info->m_Path );
+    Filesystem::RunCommand( builder_info_command, builder_info_output, sizeof( builder_info_output ) );
+
+    const char* ver_hash = builder_info_output;
+    char*       end_hash = (char*)strchr( ver_hash, ' ');
+    *end_hash = '\0';
+
+    const char* ver_description = end_hash + 3;
+
+    info->m_VersionHash        = std::stoul( ver_hash, nullptr, 0x10 );
+    StrCpy( (char*)info->m_VersionDesc, ver_description );
+
+    snprintf( builder_info_command, sizeof( builder_info_command ), "%s -extension", info->m_Path );
+    Filesystem::RunCommand( builder_info_command, info->m_Extension, sizeof( info->m_Extension ) );
+
+    RemoveTrailingWhitespace( info->m_Extension, StrLen( info->m_Extension ) );
+
+    info->m_ExtensionHash = Crc32( info->m_Extension );
+
+  } while ( FindNextFile( hFind, &find_file_data ) != 0 );
+
+  QuickSort32( &g_BuilderInfos, sizeof( BuilderInfo ), g_BuilderCount );
+  
+  for ( uint32_t i_sep = 0; i_sep < 44; ++i_sep )
+  {
+    putchar('=');
+  }
+  putchar( '\n' );
+  printf( "  Builder Info\n" );
+  for (uint32_t i_sep = 0; i_sep < 44; ++i_sep)
+  {
+    putchar('=');
+  }
+  putchar('\n');
+  for ( uint32_t i_builder = 0; i_builder < g_BuilderCount; ++i_builder )
+  {
+    BuilderInfo* info = &g_BuilderInfos[ i_builder ];
+    printf("ext: .%-17s version: %#08x : %s\n", info->m_Extension, info->m_VersionHash, info->m_VersionDesc );
+  }
+  putchar( '\n' );
+}
+
+int Init()
+{
   if ( Filesystem::FileExists( Filesystem::GetAssetsBuiltPath()) == false )
   {
     Filesystem::CreateDir( Filesystem::GetAssetsBuiltPath() );
   }
 
   g_GlobalSettings.Init( GlobalSettings::kProjectTypeKami );
+  g_NumCores           = Arch::GetNumberOfCores();
+  g_NumRunningBuilders = 0;
 
   snprintf( g_BuildersDirPath, sizeof( g_BuildersDirPath ), "%s\\%s\\%s\\Builders", Filesystem::GetOutputPath(), BUILD_PLATFORM, BUILD_CONFIG );
-  LoadBuilderInfos();
   g_AssetDb.Init();
+  InitAssetChangesList();
+
+  return 0;
+}
+
+int LoadConfig()
+{
+  
+  LoadBuilderInfos();
   AssetDb::LoadStatus db_status = g_AssetDb.LoadFromDisk();
 
   if ( db_status != AssetDb::kLoadStatusOk && db_status != AssetDb::kLoadStatusDoesNotExist )
@@ -255,10 +298,31 @@ int main( int argc, char* argv[] )
     g_AssetDb.SaveToDisk();
   }
 
-  InitAssetChangesList();
+  printf( "Asset DB Loaded.\n"); 
+
+  return 0;
+}
+
+//---------------------------------------------------------------------------------
+int main( int argc, char* argv[] )
+{
+  UNREFFED_PARAMETER( argc );
+  UNREFFED_PARAMETER( argv );
+
+  int ret = Init();
+  if ( ret )
+  {
+    return ret;
+  }
+
+  ret = LoadConfig();
+  if ( ret )
+  {
+    return ret;
+  }
 
   // scan filesystem for file changes and new files
-  printf( "Asset DB Loaded. Scanning for changes since last boot\n" );
+  printf( "Scanning for changes since last boot\n" );
   ScanFilesystemForChangedAssets();
   printf( "Found %lu assets that need to be built\n", g_AssetChangesCount );
   
@@ -267,23 +331,21 @@ int main( int argc, char* argv[] )
   Filesystem::WatchDirectoryForChanges( Filesystem::GetAssetsSourcePath(), &fs_watch_thread, &FileChangedCallback );
 
   // start main loop
+  while ( true )
   {
-    // spawn loop
+    Sleep(1);
   }
 
-
-  // char builder_command[ Filesystem::kMaxPathLen ];
-  // snprintf( builder_command, sizeof( builder_command ), "%s\\ActorBuilder.exe -source actor/TestActor.actor", g_BuildersDirPath );
-
-  //g_AssetDbPersistenceThread.RequestStop();
-  //while ( g_AssetDbPersistenceThread.Joinable() == false )
-  //{
-  //  g_AssetDbPersistenceThread.Join();
-  //}
-
-  Sleep( 200'000 );
+  fs_watch_thread.RequestStop();
+  while ( fs_watch_thread.Joinable() == false );
+  fs_watch_thread.Join();
 
   BuilderCommon::Destroy();
   g_GlobalSettings.Destroy();
   return 0;
 }
+
+// TODO: Keep track of built assets to delete
+// TODO: Create thread(s) to consume asset change requests, and run builders
+// TODO: Build dependencies
+// TODO: Serve assets

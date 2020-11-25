@@ -72,6 +72,7 @@ const char* Filesystem::GetAssetsBuiltPath()
   return built_path;
 }
 
+//---------------------------------------------------------------------------------
 const char* Filesystem::GetOutputPath()
 {
   static char output_path[ kMaxPathLen ];
@@ -80,6 +81,12 @@ const char* Filesystem::GetOutputPath()
     snprintf( output_path, kMaxPathLen, "%s%s", GetProjectBasePath(), "Output" );
   }
   return output_path;
+}
+
+//---------------------------------------------------------------------------------
+const char* Filesystem::GetExtension( const char* path )
+{
+  return strchr( path , '.') + 1;
 }
 
 //---------------------------------------------------------------------------------
@@ -193,9 +200,6 @@ struct DirInfo
 {
   HANDLE hDir;
   TCHAR lpszDirName[MAX_PATH];
-  CHAR lpBuffer[ 4096 ];
-  DWORD dwBufLength;
-  OVERLAPPED overlapped;
 };
 
 //---------------------------------------------------------------------------------
@@ -253,9 +257,6 @@ void Filesystem::WatchDirectoryForChangesThreadFunction( Thread* thread, void* p
 
     WaitForSingleObject( polling_overlap.hEvent, INFINITE );
     offset = 0;
-    //int rename = 0;
-    //char old_name[ 260 ];
-    //char new_name[ 260 ];
     do
     {
       pNotify = (FILE_NOTIFY_INFORMATION*)( (char*)buf + offset );
@@ -288,54 +289,12 @@ void Filesystem::WatchDirectoryForChangesThreadFunction( Thread* thread, void* p
       callback( filename, change_type );
 
       offset += pNotify->NextEntryOffset;
-          //case FILE_ACTION_ADDED:
     }
     while ( pNotify->NextEntryOffset );
+    Sleep(1);
   }
 
   CloseHandle( dir_info.hDir );
-
-  /*DWORD  dwWaitStatus;
-  HANDLE dwChangeHandle;
-  TCHAR  lpDrive [ 4 ];
-  TCHAR  lpFile  [ kMaxPathLen ];
-  TCHAR  lpExt   [ _MAX_EXT ];
-
-  _splitpath_s( directory, lpDrive, 4, NULL, 0, lpFile, kMaxPathLen, lpExt, _MAX_EXT );
-  lpDrive[2] = (TCHAR)'\\';
-  lpDrive[3] = (TCHAR)'\0';
-
-  dwChangeHandle = FindFirstChangeNotification(
-    lpDrive,
-    TRUE,
-    FILE_NOTIFY_CHANGE_DIR_NAME
-  );
-
-  if ( dwChangeHandle == NULL )
-  {
-    printf("\n ERROR: Unexpected NULL from FindFirstChangeNotification: %d\n", GetLastError());
-    return;
-  }
-
-  while ( thread->StopRequested() == false )
-  {
-    dwWaitStatus = WaitForSingleObject( dwChangeHandle, INFINITE );
-    switch ( dwWaitStatus )
-    {
-      case WAIT_OBJECT_0:
-      {
-        callback( lpDrive );
-        if ( FindNextChangeNotification( dwChangeHandle ) == FALSE )
-        {
-          printf("\n ERROR: FindNextChangeNotification function failed. %d\n", GetLastError());
-          thread->RequestStop();
-        }
-        break;
-      }
-      break;
-    }
-  }*/
-
   g_DynamicHeap.Free( params );
 }
 

@@ -41,6 +41,22 @@ namespace Filesystem
   void WatchDirectoryForChangesThreadFunction( Thread* thread, void* params );
 
   //---------------------------------------------------------------------------------
+  const char* ENGINE_API GetAssetsSourcePath ();
+  const char* ENGINE_API GetAssetsBuiltPath  ();
+  const char* ENGINE_API GetOutputPath       ();
+
+  const char* ENGINE_API GetExtension        ( const char* path );
+
+  const bool  ENGINE_API FileExists          ( const char* path );
+  void        ENGINE_API CreateDir           ( const char* path );
+  int         ENGINE_API RunCommand          ( const char* command, char* output_buf, size_t output_buf_size );
+
+  uint64_t    ENGINE_API GetFileSize         ( const char* file_path );
+  void        ENGINE_API ReadFile            ( const char* file_path, char* out_data, size_t* data_size );
+
+  void        ENGINE_API WatchDirectoryForChanges( const char* directory, Thread* thread, WatchDirectoryCallback callback );
+
+  //---------------------------------------------------------------------------------
   template< typename FileCb >
   void DoForEachFileInDirectoryImpl(const char* base_path, const char* current_path, FileCb callback, bool recursive)
   {
@@ -72,9 +88,10 @@ namespace Filesystem
           Filesystem::FileCallbackParams cb_params;
           cb_params.m_AbsolutePath = file_path;
           cb_params.m_RelativePath = cb_params.m_AbsolutePath + StrLen( base_path );
-          cb_params.m_Extension    = strchr( cb_params.m_RelativePath, '.' ) + 1;
+          cb_params.m_Extension    = GetExtension( cb_params.m_RelativePath );
           callback( &cb_params );
         }
+        Sleep( 1 );
       }
       while ( FindNextFile( search_handle, & file ) );
 
@@ -98,20 +115,6 @@ namespace Filesystem
       }
     }
   }
-
-  //---------------------------------------------------------------------------------
-  const char* ENGINE_API GetAssetsSourcePath ();
-  const char* ENGINE_API GetAssetsBuiltPath  ();
-  const char* ENGINE_API GetOutputPath       ();
-
-  const bool  ENGINE_API FileExists          ( const char* path );
-  void        ENGINE_API CreateDir           ( const char* path );
-  int         ENGINE_API RunCommand          ( const char* command, char* output_buf, size_t output_buf_size );
-
-  uint64_t    ENGINE_API GetFileSize         ( const char* file_path );
-  void        ENGINE_API ReadFile            ( const char* file_path, char* out_data, size_t* data_size );
-
-  void        ENGINE_API WatchDirectoryForChanges( const char* directory, Thread* thread, WatchDirectoryCallback callback );
 
   //---------------------------------------------------------------------------------
   template< typename FileCallback >

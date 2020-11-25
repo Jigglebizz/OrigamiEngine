@@ -14,15 +14,12 @@ struct AssetDbEntry
 //---------------------------------------------------------------------------------
 class AssetDb
 {
-  static constexpr size_t kHeapSize = 1024 * 1024 * 1024; // 1 GB ought to do it.
-
   uint32_t      m_EntriesCount;
   uint32_t      m_EntriesCapacity;
   AssetDbEntry* m_Entries;
   char          m_FilePath[ Filesystem::kMaxPathLen ];
   mutable Mutex m_Mutex;
 
-  char          m_HeapBacking[ kHeapSize ];
   MemAllocHeap  m_Heap;
 
 public:

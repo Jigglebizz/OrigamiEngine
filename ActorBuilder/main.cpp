@@ -8,9 +8,9 @@
 class ActorBuilder : public BuilderBase
 {
 public:
-  int          Build            ()       override;
-  AssetVersion GetAssetVersion  () const override;
-  const char*  GetAssetExtension() const override;
+  int                 Build            ()       override;
+  const AssetVersion* GetAssetVersion  () const override;
+  const char*         GetAssetExtension() const override;
 };
 
 //---------------------------------------------------------------------------------
@@ -20,9 +20,9 @@ int ActorBuilder::Build()
 }
 
 //---------------------------------------------------------------------------------
-AssetVersion ActorBuilder::GetAssetVersion() const
+const AssetVersion* ActorBuilder::GetAssetVersion() const
 {
-  return kAssetVersionActor;
+  return &kAssetVersionActor;
 }
 
 //---------------------------------------------------------------------------------

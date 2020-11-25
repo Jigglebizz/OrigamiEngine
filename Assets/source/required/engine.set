@@ -18,6 +18,13 @@
       {
         "Budget": "512MB"
       }
+    },
+    "Kami": 
+    {
+      "AssetDbHeap": 
+      {
+        "Budget":  "1GB"
+      }
     }
   }
 }

@@ -3,6 +3,7 @@
 
 #include "Origami/Util/Sort.h"
 #include "Origami/Util/Search.h"
+#include "Origami/Game/GlobalSettings.h"
 
 static const     char*    kAssetDbFilename    = "AssetDb.db";
 static constexpr uint32_t kCapacityIncrements = 1024;
@@ -12,7 +13,9 @@ void AssetDb::Init()
 {
   m_Mutex.Init( "Asset DB" );
   snprintf( m_FilePath, sizeof( m_FilePath ), "%s\\%s", Filesystem::GetAssetsBuiltPath(), kAssetDbFilename );
-  m_Heap.InitWithBacking( m_HeapBacking, sizeof( m_HeapBacking ), "AssetDB Heap" );
+
+  const HeapTemplate* heap_template = g_GlobalSettings.GetHeapTemplate( "AssetDbHeap" );
+  m_Heap.InitFromTemplate( heap_template );
 
   m_EntriesCapacity = kCapacityIncrements;
   m_EntriesCount    = 0;

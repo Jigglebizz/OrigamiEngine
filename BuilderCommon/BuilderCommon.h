@@ -19,7 +19,8 @@ int RunBuilder( int argc, char* argv[] )
     char* current_arg = argv[ i_arg ];
     if ( strcmp( current_arg , "-version" ) == 0 || strcmp( current_arg, "-v" ) == 0 )
     {
-      printf( "%#08x\n", builder.GetAssetVersion() );
+      const AssetVersion* version = builder.GetAssetVersion();
+      printf( "%#08x : %s\n", version->m_Hash, version->m_Description );
       return 0;
     }
 
@@ -76,9 +77,9 @@ public:
   char    m_AssetBuiltPath [ Filesystem::kMaxPathLen      ];
 
   //---------------------------------------------------------------------------------
-  virtual int          Build()                   = 0;
-  virtual AssetVersion GetAssetVersion()   const = 0;
-  virtual const char*  GetAssetExtension() const = 0;
+  virtual       int           Build()                   = 0;
+  virtual const AssetVersion* GetAssetVersion()   const = 0;
+  virtual const char*         GetAssetExtension() const = 0;
 };
 
 //---------------------------------------------------------------------------------

@@ -152,6 +152,7 @@
     <ClInclude Include="Actor\BaseComponent.h" />
     <ClInclude Include="Anim\Anim.h" />
     <ClInclude Include="Anim\AnimComponent.h" />
+    <ClInclude Include="Arch\ArchWin.h" />
     <ClInclude Include="Asset\Asset.h" />
     <ClInclude Include="Asset\AssetLoader.h" />
     <ClInclude Include="Asset\AssetVersions.h" />
@@ -181,6 +182,7 @@
     <ClCompile Include="Actor\BaseComponent.cpp" />
     <ClCompile Include="Anim\Anim.cpp" />
     <ClCompile Include="Anim\AnimComponent.cpp" />
+    <ClCompile Include="Arch\ArchWin.cpp" />
     <ClCompile Include="Asset\Asset.cpp" />
     <ClCompile Include="Asset\AssetLoader.cpp" />
     <ClCompile Include="Concurrency\Mutex.cpp" />
