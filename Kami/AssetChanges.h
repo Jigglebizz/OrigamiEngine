@@ -21,8 +21,12 @@ namespace AssetChanges
     AssetId  m_Dependents  [ BuilderCommon::kMaxAssetDependencyCount ];
   };
 
-  void     Init();
-  void     Destroy();
-  void     AddAssetChangeInfo( const AssetChangeInfo* info );
-  uint32_t GetChangeCount();
+        void             Init();
+        void             Destroy();
+        void             AddAssetChangeInfo( const AssetChangeInfo* info );
+        uint32_t         GetChangeCount();
+  
+  const AssetChangeInfo* GetInfoForAssetId( AssetId id );
+  const AssetChangeInfo* GetNextInfo();
+        void             RemoveInfo( const AssetChangeInfo* info );
 }

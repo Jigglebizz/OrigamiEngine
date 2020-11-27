@@ -3,6 +3,8 @@
 
 #include "Origami/Util/Log.h"
 
+#include <synchapi.h>
+
 //---------------------------------------------------------------------------------
 void Mutex::Init( const char* owner )
 {
@@ -41,4 +43,43 @@ ScopedLock::~ScopedLock()
   {
     Log::LogError( "Could not release mutex %s! %d\n", m_Mutex->m_OwnerName, GetLastError() );
   };
+}
+
+
+//---------------------------------------------------------------------------------
+void ReadWriteMutex::Init( )
+{
+  InitializeSRWLock( &m_SrwLock );
+}
+
+//---------------------------------------------------------------------------------
+void ReadWriteMutex::Destroy()
+{
+}
+
+//---------------------------------------------------------------------------------
+ScopedReadLock::ScopedReadLock( ReadWriteMutex* mutex )
+{
+  m_Mutex = mutex;
+  AcquireSRWLockShared( &m_Mutex->m_SrwLock );
+
+}
+
+//---------------------------------------------------------------------------------
+ScopedReadLock::~ScopedReadLock()
+{
+  ReleaseSRWLockShared( &m_Mutex->m_SrwLock );
+}
+
+//---------------------------------------------------------------------------------
+ScopedWriteLock::ScopedWriteLock( ReadWriteMutex* mutex )
+{
+  m_Mutex = mutex;
+  AcquireSRWLockExclusive( &m_Mutex->m_SrwLock );
+}
+
+//---------------------------------------------------------------------------------
+ScopedWriteLock::~ScopedWriteLock()
+{
+  ReleaseSRWLockExclusive( &m_Mutex->m_SrwLock );
 }

@@ -139,6 +139,7 @@
   <ItemGroup>
     <ClCompile Include="AssetChanges.cpp" />
     <ClCompile Include="AssetDb.cpp" />
+    <ClCompile Include="AssetServer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -149,6 +150,7 @@
   <ItemGroup>
     <ClInclude Include="AssetChanges.h" />
     <ClInclude Include="AssetDb.h" />
+    <ClInclude Include="AssetServer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -50,14 +50,14 @@ void AssetChanges::AddAssetChangeInfo( const AssetChangeInfo* info )
   char full_asset_path[ Filesystem::kMaxPathLen ];
   snprintf( full_asset_path, sizeof( full_asset_path ), "%s%s", Filesystem::GetAssetsSourcePath(), info->m_Name );
 
-  AssetChangeInfo* new_change = &s_AssetChanges[new_idx];
+  AssetChangeInfo* new_change = &s_AssetChanges[ new_idx ];
   memcpy_s( new_change, sizeof ( *s_AssetChanges ), info, sizeof( *info ) );
 
   BuilderCommon::AssetCommonData asset_data;
   BuilderCommon::ParseAsset( full_asset_path, &asset_data );
 
   new_change->m_DependentsCount = asset_data.m_BuildDependentsCount;
-  memcpy_s( new_change->m_Dependents,   sizeof( new_change->m_Dependents ),   asset_data.m_BuildDependents,   sizeof( asset_data.m_BuildDependents )   );
+  memcpy_s( new_change->m_Dependents, sizeof( new_change->m_Dependents ), asset_data.m_BuildDependents,   sizeof( asset_data.m_BuildDependents )   );
 
   new_change->m_DependencyCount = asset_data.m_LoadDependenciesCount;
   memcpy_s( new_change->m_Dependencies, sizeof( new_change->m_Dependencies ), asset_data.m_LoadDependencies, sizeof( asset_data.m_LoadDependencies ) );
@@ -69,4 +69,43 @@ void AssetChanges::AddAssetChangeInfo( const AssetChangeInfo* info )
 uint32_t AssetChanges::GetChangeCount()
 {
   return s_AssetChangesCount;
+}
+
+//---------------------------------------------------------------------------------
+const AssetChanges::AssetChangeInfo* AssetChanges::GetInfoForAssetId( AssetId id )
+{
+  uint32_t current_bit = s_AssetChangesBitset.GetNextSetBit(  );
+  while ( current_bit != -1 )
+  {
+    AssetChangeInfo* info = &s_AssetChanges[ current_bit ];
+    if ( info->m_AssetId == id )
+    {
+      return info;
+    }
+    current_bit = s_AssetChangesBitset.GetNextSetBit( current_bit );
+  }
+
+  return nullptr;
+}
+
+//---------------------------------------------------------------------------------
+const AssetChanges::AssetChangeInfo* AssetChanges::GetNextInfo( )
+{
+  uint32_t next_bit = s_AssetChangesBitset.GetNextSetBit();
+  if ( next_bit != -1 )
+  {
+    return &s_AssetChanges[ next_bit ];
+  }
+
+  return nullptr;
+}
+
+//---------------------------------------------------------------------------------
+void AssetChanges::RemoveInfo( const AssetChangeInfo* info )
+{
+  uint32_t change_idx = (uint32_t)INDEX_OF( s_AssetChanges, info );
+  ASSERT_MSG( change_idx < s_AssetChangesCount, "Info is not in asset change list" );
+
+  s_AssetChangesBitset.Unset( change_idx );
+  s_AssetChangesCount--;
 }

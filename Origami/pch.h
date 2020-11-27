@@ -23,7 +23,10 @@
 static_assert(true, "Unrecognized configuration");
 #endif
 
+#include <winsock2.h>
+#pragma comment(lib,"ws2_32.lib")
 #include <windows.h>
+
 #include <cassert>
 #include <stdint.h>
 #include <type_traits>
@@ -33,6 +36,7 @@ static_assert(true, "Unrecognized configuration");
 #define DISABLE_OPTS __pragma( optimize( "", off ) )
 
 #define OFFSET_OF( struct_name, member ) (uint64_t)&((struct_name*)0)->member
+#define INDEX_OF( base, member ) ( (char*)member - (char*)base ) / sizeof( *member )
 
 #define UNREFFED_PARAMETER( param ) (void)(param)
 

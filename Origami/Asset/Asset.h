@@ -3,6 +3,7 @@
 class AssetId
 {
   uint32_t m_Value;
+  friend const bool operator==( const AssetId&, const AssetId& );
 public:
   static const AssetId kInvalidAssetId;
 
@@ -33,4 +34,10 @@ constexpr AssetId AssetId::FromU32( uint32_t value )
 uint32_t AssetId::ToU32() const
 {
   return m_Value;
+}
+
+//---------------------------------------------------------------------------------
+inline const bool operator==( const AssetId& a, const AssetId& b )
+{
+  return a.m_Value == b.m_Value;
 }

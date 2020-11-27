@@ -1,5 +1,7 @@
 #pragma once
 
+#include <synchapi.h>
+
 class Mutex;
 
 //---------------------------------------------------------------------------------
@@ -22,4 +24,37 @@ class Mutex
 public:
   void Init( const char* owner = "<UNKNOWN>" );
   void Destroy();
+};
+
+//---------------------------------------------------------------------------------
+class ReadWriteMutex
+{
+  friend class ScopedReadLock;
+  friend class ScopedWriteLock;
+
+  SRWLOCK m_SrwLock;
+
+public:
+  void Init( );
+  void Destroy();
+};
+
+//---------------------------------------------------------------------------------
+class ScopedReadLock
+{
+  ReadWriteMutex* m_Mutex;
+
+public:
+  ScopedReadLock( ReadWriteMutex* mutex );
+  ~ScopedReadLock();
+};
+
+//---------------------------------------------------------------------------------
+class ScopedWriteLock
+{
+  ReadWriteMutex* m_Mutex;
+
+public:
+  ScopedWriteLock( ReadWriteMutex* mutex );
+  ~ScopedWriteLock();
 };
