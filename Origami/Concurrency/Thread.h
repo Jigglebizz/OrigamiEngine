@@ -17,11 +17,11 @@ private:
     kIsAudioThread = 0x10,
   };
   
-  uint32_t        m_Id;
-  HANDLE          m_SystemThreadHandle;
-  uint8_t         m_Flags;
-  ThreadFunction  m_Function;
-  void*           m_FunctionParams;
+  uint32_t          m_Id;
+  HANDLE            m_SystemThreadHandle;
+  volatile uint8_t  m_Flags;
+  ThreadFunction    m_Function;
+  void*             m_FunctionParams;
 
   friend static DWORD WINAPI StaticThreadExecute(void* param);
   void ThreadExecute( );

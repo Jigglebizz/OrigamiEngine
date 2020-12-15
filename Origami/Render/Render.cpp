@@ -7,6 +7,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include "Origami/Render/imgui/imgui.h"
+#include "Origami/Render/imgui/imgui_sdl.h"
+
 //---------------------------------------------------------------------------------
 void Render::InitRenderCon()
 {
@@ -70,13 +73,20 @@ void Render::Init( const char* window_title, const char* window_icon )
 
   RenderCon* con = &s_RenderCon;
 
-  con->m_Window = SDL_CreateWindow( window_title, 100, 100, 640, 480, SDL_WINDOW_SHOWN );
+  static constexpr int win_x = 100;
+  static constexpr int win_y = 100;
+  static constexpr int win_w = 640;
+  static constexpr int win_h = 640;
+
+  con->m_Window = SDL_CreateWindow( window_title, win_x, win_y, win_w, win_h, SDL_WINDOW_SHOWN );
   if ( con->m_Window == nullptr )
   {
     Log::LogError("SDL_CreateWindow Error: %s\n", SDL_GetError() );
     Destroy();
     return;
   }
+
+  SDL_SetWindowResizable( con->m_Window, SDL_TRUE );
 
   con->m_Renderer = SDL_CreateRenderer( con->m_Window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
   if ( con->m_Renderer == nullptr )
@@ -85,6 +95,9 @@ void Render::Init( const char* window_title, const char* window_icon )
     Destroy();
     return;
   }
+
+  SDL_Rect clip_rect = { 0, 0, win_w, win_h };
+  SDL_RenderSetClipRect( con->m_Renderer, &clip_rect );
 
   // Load window icon
   static constexpr char default_icon[] = "icon\\OrigamiIcon64.png";
@@ -114,11 +127,17 @@ void Render::Init( const char* window_title, const char* window_icon )
   }
 
   stbi_image_free( pixel_data );
+
+  // Init imgui
+  ImGui::CreateContext();
+  ImGuiSDL::Initialize(con->m_Renderer, win_w, win_h);
 }
 
 //---------------------------------------------------------------------------------
 void Render::Destroy()
 {
+  ImGuiSDL::Deinitialize();
+
   RenderCon* con = &s_RenderCon;
 
   for ( uint16_t i_tex = 0; i_tex < kMaxTextures; i_tex++ )
@@ -131,11 +150,20 @@ void Render::Destroy()
     SDL_DestroyRenderer ( con->m_Renderer );
   }
 
+  ImGui::DestroyContext();
+
   if ( con->m_Window )
   {
     SDL_DestroyWindow   ( con->m_Window );
   }
   SDL_Quit();
+}
+
+//---------------------------------------------------------------------------------
+void Render::ResizeWindow( int x, int y )
+{
+  UNREFFED_PARAMETER( x );
+  UNREFFED_PARAMETER( y );
 }
 
 
@@ -274,6 +302,7 @@ void Render::Draw()
 {
   RenderCon* con = &s_RenderCon;
 
+  SDL_SetRenderDrawColor( con->m_Renderer, 50, 50, 50, 255 );
   SDL_RenderClear( con->m_Renderer );
   for ( int32_t i_layer = kMaxLayers - 1; i_layer >= 0; --i_layer )
   {
@@ -293,5 +322,7 @@ void Render::Draw()
     }
   }
 
+  ImGui::Render();
+  ImGuiSDL::Render( ImGui::GetDrawData() );
   SDL_RenderPresent( con->m_Renderer );
 }

@@ -46,6 +46,12 @@ void Bitset::InitWithBacking( void* backing, uint32_t num_bits )
 }
 
 //---------------------------------------------------------------------------------
+void* Bitset::GetBackingBase()
+{
+  return m_Set;
+}
+
+//---------------------------------------------------------------------------------
 bool Bitset::IsSet( uint32_t index ) const
 {
   return m_Set[ index >> 0x3 ] & ( 0x01 << ( index & 0x7 ) );

@@ -21,6 +21,8 @@ namespace Render
   void      ENGINE_API SetTexImageRect ( TexHandle tex_handle, RectInt rect );
   void      ENGINE_API SetTexScale     ( TexHandle tex_handle, Vec2 scale   );
   void      ENGINE_API SetTexScale     ( TexHandle tex_handle, float scale  );
+  
+  void      ENGINE_API ResizeWindow    ( int x, int y );
 
   //---------------------------------------------------------------------------------
   struct TextureAsset

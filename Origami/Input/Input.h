@@ -3,7 +3,7 @@
 namespace Input
 {
   void Init();
-  void EventPump();
+  void EventPump( float dt );
   void Update();
 
   struct ButtonEvent

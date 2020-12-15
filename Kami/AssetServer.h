@@ -8,13 +8,11 @@ namespace AssetServer
   {
     kStatusDead         = 0x00,
     kStatusInitialized  = 0x01,
-
   };
 
   static constexpr uint16_t kTcpPort              = 2255;
-  static constexpr uint8_t  kMaxClientConnections = 4;
 
-  void         ENGINE_API Init();
+  void         ENGINE_API Init( uint32_t max_connections );
   void         ENGINE_API Destroy();
   AssetId      ENGINE_API GetNextRequest();
   ServerStatus ENGINE_API GetStatus();

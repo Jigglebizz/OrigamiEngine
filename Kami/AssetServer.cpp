@@ -1,37 +1,93 @@
 #include "Origami/pch.h"
 #include "Kami/AssetServer.h"
 #include "Origami/Concurrency/Thread.h"
+#include "Origami/Concurrency/Mutex.h"
 #include "Origami/Util/Log.h"
 
 #include <ws2tcpip.h>
 
 //---------------------------------------------------------------------------------
 AssetServer::ServerStatus s_Status;
-Thread                    s_Thread;
+Thread                    s_RequestThread;
+Thread                    s_CommThread;
+
+ReadWriteMutex            s_ListenerSocketMutex;
 SOCKET                    s_ListenSocket;
-SOCKET                    s_ClientSockets[ AssetServer::kMaxClientConnections ];
+
+ReadWriteMutex            s_ClientSocketsMutex;
+uint32_t                  s_NumMaxClientConnections;
+uint32_t                  s_NumConnectedClients;
+Bitset                    s_ClientSocketBitset;
+SOCKET*                   s_ClientSockets;
 
 //---------------------------------------------------------------------------------
-void SocketThreadFunction( Thread* thread, void* params )
+void ConnectionRequestThreadFunction( Thread* thread, void* params )
 {
   UNREFFED_PARAMETER( thread );
   UNREFFED_PARAMETER( params );
-  // Service client connection requests
 
+  if ( s_NumConnectedClients != s_NumMaxClientConnections )
+  {
 
+    SOCKET new_client;
 
-  // Service client comm
+    {
+      ScopedReadLock listener_lock( &s_ListenerSocketMutex );
+      new_client = accept( s_ListenSocket, NULL, NULL );
+      if ( new_client == INVALID_SOCKET )
+      {
+        Log::LogError( "Accept incoming cconnection failed with %#08x\n", WSAGetLastError() );
+        return;
+      }
+    }
 
-  //if ( ( s = socket(AF_INET, SOCK_STREAM, 0 ) ) == INVALID_SOCKET )
-  //{
-  //  Log::LogInfo( "" )
-  //}
+    ScopedWriteLock clients_lock( &s_ClientSocketsMutex );
 
+    uint32_t client_id = s_ClientSocketBitset.FirstUnsetBit();
+    s_ClientSockets[ client_id ] = new_client;
+    s_NumConnectedClients++;
+  }
 }
 
 //---------------------------------------------------------------------------------
-void AssetServer::Init()
+void CommunicationThreadFunction( Thread* thread, void* params )
 {
+  UNREFFED_PARAMETER( thread );
+  UNREFFED_PARAMETER( params );
+
+  uint32_t client_id;
+  {
+    ScopedReadLock read_lock( &s_ClientSocketsMutex );
+    client_id = s_ClientSocketBitset.GetNextSetBit();
+  }
+
+  while ( client_id != -1 )
+  {
+    SOCKET client;
+
+    {
+      ScopedReadLock read_lock( &s_ClientSocketsMutex );
+      client    = s_ClientSockets[ client_id ];
+      client_id = s_ClientSocketBitset.GetNextSetBit( client_id );
+    }
+
+
+  }
+}
+
+//---------------------------------------------------------------------------------
+void AssetServer::Init( uint32_t max_connections )
+{
+  s_ListenerSocketMutex.Init();
+  s_ClientSocketsMutex.Init();
+
+  s_NumMaxClientConnections   = max_connections;
+  s_NumConnectedClients       = 0;
+  s_ClientSockets             = (SOCKET*)g_DynamicHeap.Alloc( sizeof( SOCKET ) * max_connections );
+  void* client_bitset_backing =          g_DynamicHeap.Alloc( (size_t)( max_connections >> 3 ) + 1 );
+
+  s_ClientSocketBitset.InitWithBacking( client_bitset_backing, max_connections );
+
   WSADATA wsa;
   int rc;
 
@@ -93,18 +149,34 @@ void AssetServer::Init()
     return;
   }
 
-  s_Thread.Start( &SocketThreadFunction, nullptr );
+  s_Status = kStatusInitialized;
+
+  s_CommThread.Start   ( &CommunicationThreadFunction,     nullptr );
+  s_RequestThread.Start( &ConnectionRequestThreadFunction, nullptr );
 }
 
 //---------------------------------------------------------------------------------
 void AssetServer::Destroy()
 {
-  s_Thread.RequestStop();
-  while ( s_Thread.Joinable() == false );
-  s_Thread.Join();
+  s_RequestThread.RequestStop();
+  s_CommThread.RequestStop();
+
+  while ( s_RequestThread.Joinable() == false );
+  s_RequestThread.Join();
+
+  while ( s_CommThread.Joinable() == false );
+  s_CommThread.Join();
 
   closesocket( s_ListenSocket );
   WSACleanup();
+
+  g_DynamicHeap.Free( s_ClientSocketBitset.GetBackingBase() );
+  g_DynamicHeap.Free( s_ClientSockets );
+
+  s_ListenerSocketMutex.Destroy();
+  s_ClientSocketsMutex.Destroy();
+
+  s_Status = kStatusDead;
 }
 
 //---------------------------------------------------------------------------------

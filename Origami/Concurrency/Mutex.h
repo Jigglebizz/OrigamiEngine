@@ -10,8 +10,8 @@ class ScopedLock
   Mutex* m_Mutex;
 
 public:
-  ScopedLock( Mutex* mutex );
-  ~ScopedLock();
+  ENGINE_API ScopedLock( Mutex* mutex );
+  ENGINE_API ~ScopedLock();
 };
 
 //---------------------------------------------------------------------------------
@@ -22,8 +22,8 @@ class Mutex
   HANDLE m_MutexHandle;
   char   m_OwnerName[ 32 ];
 public:
-  void Init( const char* owner = "<UNKNOWN>" );
-  void Destroy();
+  void ENGINE_API Init( const char* owner = "<UNKNOWN>" );
+  void ENGINE_API Destroy();
 };
 
 //---------------------------------------------------------------------------------
@@ -35,8 +35,8 @@ class ReadWriteMutex
   SRWLOCK m_SrwLock;
 
 public:
-  void Init( );
-  void Destroy();
+  void ENGINE_API Init( );
+  void ENGINE_API Destroy();
 };
 
 //---------------------------------------------------------------------------------
@@ -45,8 +45,8 @@ class ScopedReadLock
   ReadWriteMutex* m_Mutex;
 
 public:
-  ScopedReadLock( ReadWriteMutex* mutex );
-  ~ScopedReadLock();
+  ENGINE_API ScopedReadLock( ReadWriteMutex* mutex );
+  ENGINE_API ~ScopedReadLock();
 };
 
 //---------------------------------------------------------------------------------
@@ -55,6 +55,6 @@ class ScopedWriteLock
   ReadWriteMutex* m_Mutex;
 
 public:
-  ScopedWriteLock( ReadWriteMutex* mutex );
-  ~ScopedWriteLock();
+  ENGINE_API ScopedWriteLock( ReadWriteMutex* mutex );
+  ENGINE_API ~ScopedWriteLock();
 };

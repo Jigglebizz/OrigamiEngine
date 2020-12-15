@@ -29,6 +29,7 @@ public:
 
 
          void           ENGINE_API InitWithBacking    ( void* backing, uint32_t num_bits );
+         void*          ENGINE_API GetBackingBase     ( );
                         
          bool           ENGINE_API IsSet              ( uint32_t index                      ) const;
          void           ENGINE_API Set                ( uint32_t index, bool enabled = true );

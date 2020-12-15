@@ -13,6 +13,7 @@
 
 #include "Kami/AssetDb.h"
 #include "Kami/AssetChanges.h"
+#include "Kami/AssetServer.h"
 
 
 //---------------------------------------------------------------------------------
@@ -270,12 +271,17 @@ int main( int argc, char* argv[] )
   Thread fs_watch_thread;
   Filesystem::WatchDirectoryForChanges( Filesystem::GetAssetsSourcePath(), &fs_watch_thread, &FileChangedCallback );
 
+  // Start server
+  AssetServer::Init( 4 );
+
   // start main loop
   while ( true )
   {
-
+  
     Sleep(1);
   }
+
+  AssetServer::Destroy();
 
   fs_watch_thread.RequestStop();
   while ( fs_watch_thread.Joinable() == false );

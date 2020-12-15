@@ -87,6 +87,7 @@
       <PrecompiledHeaderFile>Origami/pch.h</PrecompiledHeaderFile>
       <LanguageStandard>Default</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -107,6 +108,7 @@
       <PrecompiledHeaderFile>Origami/pch.h</PrecompiledHeaderFile>
       <LanguageStandard>Default</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

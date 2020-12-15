@@ -11,14 +11,18 @@
 #include "Origami/Render/Render.h"
 #include "Origami/Asset/AssetLoader.h"
 #include "Origami/Actor/ActorSystem.h"
+#include "Origami/Render/imgui/imgui.h"
 
 //---------------------------------------------------------------------------------
 static float constexpr kFpsTarget = 24.f;
 static float constexpr kFrameTime = 1000.f / kFpsTarget;
 
+float g_Time          = 0.f;
+bool  g_GameShouldRun = true;
+
 
 //---------------------------------------------------------------------------------
-void LogFunction( uint8_t flags, const char* fmt, va_list args )
+static void LogFunction( uint8_t flags, const char* fmt, va_list args )
 {
   UNREFFED_PARAMETER( flags );
   Log::Timestamp ts = Log::MsToTimestamp( g_Time );
@@ -79,14 +83,18 @@ void Game::Run()
   float dt_accum = 0.f;
   while ( g_GameShouldRun )
   {
-    Input::EventPump();
     steady_clock::time_point current_time = steady_clock::now();
     float dt = (float)duration_cast<nanoseconds>( current_time - prev_time ).count() / 1'000'000.f;
+    Input::EventPump( dt );
     dt_accum += dt;
     g_Time   += dt;
 
     if ( dt_accum >= kFrameTime )
     {
+      ImGui::NewFrame();
+
+      ImGui::ShowDemoWindow();
+
       UpdateFirst  ( dt_accum );
       UpdateMiddle ( dt_accum );
       UpdateLast   ( dt_accum );
