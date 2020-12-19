@@ -104,6 +104,11 @@ uint32_t Bitset::FirstUnsetBit( ) const
   uint32_t count = 0;
   for ( uint32_t i_byte = 0; i_byte < m_NumBytes; ++i_byte )
   {
+    if ( m_Set[ i_byte ] == -1 )
+    {
+      count += 8;
+      continue;
+    }
     for ( uint8_t i_bit = 0; i_bit < 8; ++i_bit )
     {
       if ( ( m_Set[ i_byte ] & ( 0x01 << i_bit ) ) == 0 )
@@ -123,6 +128,11 @@ uint32_t Bitset::GetNextSetBit( uint32_t current ) const
   uint32_t count = (current == -1) ? 0 : current >> 3 << 3; // start at byte
   for (uint32_t i_byte = count >> 3; i_byte < m_NumBytes; ++i_byte)
   {
+    if ( m_Set[ i_byte ] == 0 )
+    {
+      count += 8;
+      continue;
+    }
     for ( uint8_t i_bit = 0; i_bit < 8; ++i_bit )
     {
       if ( current == -1 || i_byte * 8 + i_bit > current )

@@ -23,6 +23,7 @@ namespace Render
   void      ENGINE_API SetTexScale     ( TexHandle tex_handle, float scale  );
   
   void      ENGINE_API ResizeWindow    ( int x, int y );
+  Vec2Int   ENGINE_API GetWindowSize   ( );
 
   //---------------------------------------------------------------------------------
   struct TextureAsset

@@ -23,20 +23,20 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -95,6 +95,10 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Output\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Origami.lib;BuilderCommon.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Lib>
+      <AdditionalDependencies>Origami.lib;BuilderCommon.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Output\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -118,6 +122,10 @@
       <AdditionalDependencies>Origami.lib;BuilderCommon.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Output\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
+    <Lib>
+      <AdditionalDependencies>Origami.lib;BuilderCommon.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Output\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'">
     <ClCompile>
@@ -131,7 +139,7 @@
     </ClCompile>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)Output\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Origami.lib</AdditionalDependencies>
+      <AdditionalDependencies>Origami.lib;BuilderCommon.lib</AdditionalDependencies>
     </Lib>
     <Link>
       <AdditionalDependencies>Origami.lib;BuilderCommon.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -142,7 +150,7 @@
     <ClCompile Include="AssetChanges.cpp" />
     <ClCompile Include="AssetDb.cpp" />
     <ClCompile Include="AssetServer.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Kami.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Final|x64'">Create</PrecompiledHeader>
@@ -153,6 +161,7 @@
     <ClInclude Include="AssetChanges.h" />
     <ClInclude Include="AssetDb.h" />
     <ClInclude Include="AssetServer.h" />
+    <ClInclude Include="Kami.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

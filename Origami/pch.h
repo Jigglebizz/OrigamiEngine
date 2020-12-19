@@ -52,6 +52,10 @@ static_assert(true, "Unrecognized configuration");
 #include "Origami/Memory/Memory.h"
 #include "Origami/Util/Hash.h"
 
+#define KB * 1024
+#define MB * 1024 * 1024
+#define GB * 1024 * 1024 * 1024
+
 
 
 // reference additional headers your program requires here

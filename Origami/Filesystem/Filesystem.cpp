@@ -90,6 +90,12 @@ const char* Filesystem::GetExtension( const char* path )
 }
 
 //---------------------------------------------------------------------------------
+const char* Filesystem::GetFilename( const char* full_path )
+{
+  return strrchr( full_path, '\\' ) + 1;
+}
+
+//---------------------------------------------------------------------------------
 const bool Filesystem::FileExists( const char* name )
 {
   struct stat buffer;

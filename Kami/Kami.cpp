@@ -1,15 +1,15 @@
 #include "Origami/pch.h"
+#include "Kami/Kami.h"
 
 #include <fileapi.h>
 #include <string> // for stoul
 
 #include "Origami/Concurrency/Thread.h"
-#include "Origami/Filesystem/Filesystem.h"
 #include "Origami/Util/Sort.h"
 #include "Origami/Util/Search.h"
 #include "Origami/Game/GlobalSettings.h"
 #include "Origami/Arch/ArchWin.h"
-#include "Origami/Asset/AssetVersions.h"
+#include "Origami/Util/Log.h"
 
 #include "Kami/AssetDb.h"
 #include "Kami/AssetChanges.h"
@@ -17,36 +17,25 @@
 
 
 //---------------------------------------------------------------------------------
-static constexpr uint32_t kMaxBuildersCount   = 32;
-static constexpr uint8_t  kMaxExtensionLen    = 16;
-
+static constexpr uint32_t kMaxBuildersCount = 32;
 static constexpr uint32_t kBuiltVersionNew    = 0;
 
 //---------------------------------------------------------------------------------
-struct BuilderInfo
-{
-  uint32_t      m_ExtensionHash;
-  uint32_t      m_VersionHash;
-  char          m_VersionDesc[ AssetVersion::kMaxDescriptionLen ];
-  char          m_Path       [ Filesystem::kMaxPathLen ];
-  char          m_Extension  [ kMaxExtensionLen ];
-};
+uint32_t          g_BuilderCount = 0;
+Kami::BuilderInfo g_BuilderInfos[ kMaxBuildersCount ];
 
-//---------------------------------------------------------------------------------
-uint32_t    g_BuilderCount = 0;
-BuilderInfo g_BuilderInfos[ kMaxBuildersCount ];
-
-uint32_t         g_NumRunningBuilders;
-uint32_t         g_NumCores;
-
-char             g_SourcePath     [ Filesystem::kMaxPathLen ];
-char             g_BuildersDirPath[ Filesystem::kMaxPathLen ];
-
-AssetDb          g_AssetDb;
+uint32_t          g_NumRunningBuilders;
+uint32_t          g_NumCores;
+                  
+char              g_SourcePath     [ Filesystem::kMaxPathLen ];
+char              g_BuildersDirPath[ Filesystem::kMaxPathLen ];
+                  
+AssetDb           g_AssetDb;
+Thread            g_FsWatchThread;
 
 
 //---------------------------------------------------------------------------------
-void ScanFilesystemForChangedAssets()
+static void ScanFilesystemForChangedAssets()
 {
   uint32_t* asset_extensions = (uint32_t*)g_DynamicHeap.Alloc( sizeof(uint32_t) * g_BuilderCount );
 
@@ -75,8 +64,8 @@ void ScanFilesystemForChangedAssets()
     else
     {
       // check if asset is out of date
-      BuilderInfo* builder         = &g_BuilderInfos[ newest_version_idx ];
-      uint32_t     current_version = g_AssetDb.GetVersionFor( asset_id );
+      Kami::BuilderInfo* builder         = &g_BuilderInfos[ newest_version_idx ];
+      uint32_t           current_version = g_AssetDb.GetVersionFor( asset_id );
 
       if ( current_version != builder->m_VersionHash )
       {
@@ -103,7 +92,7 @@ const char* change_names[] =
 };
 
 //---------------------------------------------------------------------------------
-void FileChangedCallback( const char* filename, Filesystem::WatchDirectoryChangeType change_type )
+static void FileChangedCallback( const char* filename, Filesystem::WatchDirectoryChangeType change_type )
 {
   const char* extension   = Filesystem::GetExtension( filename );
   uint32_t    ext_hash    = Crc32( extension );
@@ -124,14 +113,14 @@ void FileChangedCallback( const char* filename, Filesystem::WatchDirectoryChange
     strcpy_s( new_info.m_Name, filename );
 
     AssetChanges::AddAssetChangeInfo(&new_info);
-    printf( "Added %s : 0x%8x to asset build list\n", filename, asset_id.ToU32() );
+    Log::LogInfo( "Added %s : 0x%8x to asset build list\n", filename, asset_id.ToU32() );
   }
 
   //printf( "file %s: %s\n", change_names[change_type], filename );
 }
 
 //---------------------------------------------------------------------------------
-void LoadBuilderInfos()
+static void LoadBuilderInfos()
 {
   char builders_glob[ Filesystem::kMaxPathLen ];
   snprintf( builders_glob, sizeof( builders_glob ), "%s\\*.exe", g_BuildersDirPath );
@@ -140,7 +129,7 @@ void LoadBuilderInfos()
   HANDLE hFind = FindFirstFile( builders_glob, &find_file_data );
   if ( hFind == INVALID_HANDLE_VALUE )
   {
-    printf( "FindFirstFile failed %d. Are there any builders that match %s?\n", GetLastError(), builders_glob );
+    Log::LogError( "FindFirstFile failed %d. Are there any builders that match %s?\n", GetLastError(), builders_glob );
     return;
   }
 
@@ -149,7 +138,7 @@ void LoadBuilderInfos()
   do
   {
     MemZero( builder_info_output, sizeof( builder_info_output ) );
-    BuilderInfo* info = &g_BuilderInfos[ g_BuilderCount++ ];
+    Kami::BuilderInfo* info = &g_BuilderInfos[ g_BuilderCount++ ];
 
     snprintf( info->m_Path,         sizeof( info->m_Path ),         "%s\\%s",      g_BuildersDirPath, find_file_data.cFileName );
     snprintf( builder_info_command, sizeof( builder_info_command ), "%s -version", info->m_Path );
@@ -173,29 +162,46 @@ void LoadBuilderInfos()
 
   } while ( FindNextFile( hFind, &find_file_data ) != 0 );
 
-  QuickSort32( &g_BuilderInfos, sizeof( BuilderInfo ), g_BuilderCount );
+  QuickSort32( &g_BuilderInfos, sizeof( Kami::BuilderInfo ), g_BuilderCount );
   
-  for ( uint32_t i_sep = 0; i_sep < 44; ++i_sep )
-  {
-    putchar('=');
-  }
-  putchar( '\n' );
-  printf( "  Builder Info\n" );
-  for (uint32_t i_sep = 0; i_sep < 44; ++i_sep)
-  {
-    putchar('=');
-  }
-  putchar('\n');
+  Log::LogInfo( "========================================\n" );
+  Log::LogInfo( "\n" );
+  Log::LogInfo( "  Builder Info\n" );
+  Log::LogInfo( "========================================\n" );
+
   for ( uint32_t i_builder = 0; i_builder < g_BuilderCount; ++i_builder )
   {
-    BuilderInfo* info = &g_BuilderInfos[ i_builder ];
-    printf("ext: .%-17s version: %#08x : %s\n", info->m_Extension, info->m_VersionHash, info->m_VersionDesc );
+    Kami::BuilderInfo* info = &g_BuilderInfos[ i_builder ];
+    Log::LogInfo("ext: .%-17s version: %#08x : %s\n", info->m_Extension, info->m_VersionHash, info->m_VersionDesc );
   }
-  putchar( '\n' );
+  Log::LogInfo("\n");
 }
 
 //---------------------------------------------------------------------------------
-int Init()
+static int LoadConfig()
+{
+  LoadBuilderInfos();
+  AssetDb::LoadStatus db_status = g_AssetDb.LoadFromDisk();
+
+  if ( db_status != AssetDb::kLoadStatusOk && db_status != AssetDb::kLoadStatusDoesNotExist )
+  {
+    Log::LogError( "Problem with Asset DB. Could not run Kami!\n" );
+    return 1;
+  }
+
+  if ( db_status  == AssetDb::kLoadStatusDoesNotExist )
+  {
+    Log::LogError( "Asset db does not exist. Creating at %s\n", g_AssetDb.GetFilePath() );
+    g_AssetDb.SaveToDisk();
+  }
+
+  Log::LogInfo( "Asset DB Loaded.\n"); 
+
+  return 0;
+}
+
+//---------------------------------------------------------------------------------
+int Kami::Init()
 {
   if ( Filesystem::FileExists( Filesystem::GetAssetsBuiltPath()) == false )
   {
@@ -210,85 +216,51 @@ int Init()
   g_AssetDb.Init();
   AssetChanges::Init();
 
-  return 0;
-}
-
-//---------------------------------------------------------------------------------
-void Destroy()
-{
-  AssetChanges::Destroy();
-  g_AssetDb.Destroy();
-  g_GlobalSettings.Destroy();
-}
-
-//---------------------------------------------------------------------------------
-int LoadConfig()
-{
-  LoadBuilderInfos();
-  AssetDb::LoadStatus db_status = g_AssetDb.LoadFromDisk();
-
-  if ( db_status != AssetDb::kLoadStatusOk && db_status != AssetDb::kLoadStatusDoesNotExist )
-  {
-    printf( "Problem with Asset DB. Could not run Kami!\n" );
-    return 1;
-  }
-
-  if ( db_status  == AssetDb::kLoadStatusDoesNotExist )
-  {
-    printf( "Asset db does not exist. Creating at %s\n", g_AssetDb.GetFilePath() );
-    g_AssetDb.SaveToDisk();
-  }
-
-  printf( "Asset DB Loaded.\n"); 
-
-  return 0;
-}
-
-//---------------------------------------------------------------------------------
-int main( int argc, char* argv[] )
-{
-  UNREFFED_PARAMETER( argc );
-  UNREFFED_PARAMETER( argv );
-
-  int ret = Init();
-  if ( ret )
-  {
-    return ret;
-  }
-
-  ret = LoadConfig();
+  int ret = LoadConfig();
   if ( ret )
   {
     return ret;
   }
 
   // scan filesystem for file changes and new files
-  printf( "Scanning for changes since last boot\n" );
+  Log::LogInfo( "Scanning for changes since last boot\n" );
   ScanFilesystemForChangedAssets();
-  printf( "Found %lu assets that need to be built\n", AssetChanges::GetChangeCount() );
+  Log::LogInfo( "Found %lu assets that need to be built\n", AssetChanges::GetChangeCount() );
   
   // create change notification handle
-  Thread fs_watch_thread;
-  Filesystem::WatchDirectoryForChanges( Filesystem::GetAssetsSourcePath(), &fs_watch_thread, &FileChangedCallback );
+  Filesystem::WatchDirectoryForChanges( Filesystem::GetAssetsSourcePath(), &g_FsWatchThread, &FileChangedCallback );
 
   // Start server
   AssetServer::Init( 4 );
 
-  // start main loop
-  while ( true )
-  {
-  
-    Sleep(1);
-  }
+  return 0;
+}
 
+//---------------------------------------------------------------------------------
+void Kami::Execute()
+{
+  Sleep(1);
+}
+
+//---------------------------------------------------------------------------------
+void Kami::Destroy()
+{
   AssetServer::Destroy();
 
-  fs_watch_thread.RequestStop();
-  while ( fs_watch_thread.Joinable() == false );
-  fs_watch_thread.Join();
+  g_FsWatchThread.RequestStop();
+  while ( g_FsWatchThread.Joinable() == false );
+  g_FsWatchThread.Join();
 
-  Destroy();
-  return 0;
+  AssetChanges::Destroy();
+  g_AssetDb.Destroy();
+  g_GlobalSettings.Destroy();
+}
+
+//---------------------------------------------------------------------------------
+const Kami::BuilderInfo* Kami::GetBuilderInfos( uint32_t* count )
+{
+  *count = g_BuilderCount;
+  return g_BuilderInfos;
 }
 
 // TODO: Keep track of built assets to delete

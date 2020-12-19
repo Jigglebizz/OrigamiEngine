@@ -33,7 +33,7 @@ public:
                         
          bool           ENGINE_API IsSet              ( uint32_t index                      ) const;
          void           ENGINE_API Set                ( uint32_t index, bool enabled = true );
-  inline void           ENGINE_API Unset              ( uint32_t index                      );
+         void           ENGINE_API Unset              ( uint32_t index                      );
                         
          uint32_t       ENGINE_API GetCountSet        ( ) const;
          uint32_t       ENGINE_API FirstUnsetBit      ( ) const;
@@ -41,7 +41,7 @@ public:
 };
 
 //---------------------------------------------------------------------------------
-void Bitset::Unset( uint32_t index )
+inline void Bitset::Unset( uint32_t index )
 {
   Set( index, false );
 }

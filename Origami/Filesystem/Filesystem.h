@@ -46,6 +46,7 @@ namespace Filesystem
   const char* ENGINE_API GetOutputPath       ();
 
   const char* ENGINE_API GetExtension        ( const char* path );
+  const char* ENGINE_API GetFilename         ( const char* full_path );
 
   const bool  ENGINE_API FileExists          ( const char* path );
   void        ENGINE_API CreateDir           ( const char* path );
@@ -83,7 +84,6 @@ namespace Filesystem
         }
         else
         {
-
           snprintf( file_path, sizeof( file_path ), "%s%s%s\\%s", base_path, *current_path ? "\\" : "", current_path, file.cFileName );
           Filesystem::FileCallbackParams cb_params;
           cb_params.m_AbsolutePath = file_path;

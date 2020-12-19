@@ -166,6 +166,16 @@ void Render::ResizeWindow( int x, int y )
   UNREFFED_PARAMETER( y );
 }
 
+//---------------------------------------------------------------------------------
+Vec2Int Render::GetWindowSize()
+{
+  RenderCon* con = &s_RenderCon;
+
+  Vec2Int size;
+  SDL_GetWindowSize( con->m_Window, &size.x, &size.y );
+
+  return size;
+}
 
 
 //---------------------------------------------------------------------------------
