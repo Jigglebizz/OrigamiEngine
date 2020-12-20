@@ -18,89 +18,8 @@
 static float constexpr kFpsTarget = 60.f;
 static float constexpr kFrameTime = 1000.f / kFpsTarget;
 
-// Log is in a ring buffer
-// TODO: Implement as its own class. This might be reuseable
-static uint32_t           s_LogHead;
-static uint32_t           s_LogReadHead;
-static bool               s_LogHasLooped;
-static char               s_LogBuffer[ 4 MB ];
-static uint32_t constexpr kLogLoopIdx = sizeof(s_LogBuffer) - 1;
-
-//---------------------------------------------------------------------------------
-//static void InitFrontLoadingLogRing()
-//{
-//  s_LogBuffer[ kLogLoopIdx ] = '\0';
-//  s_LogHead = kLogLoopIdx - 1;
-//  s_LogHasLooped = false;
-//}
-//
-////---------------------------------------------------------------------------------
-//// TODO: This is probably still useful but it's not needed here
-//static void LogRingAppendFront( const char* string )
-//{
-//  uint32_t string_len = StrLen( string );
-//
-//  if( string_len > s_LogHead )
-//  {
-//    s_LogHasLooped = true;
-//
-//    memcpy( s_LogBuffer, &string[ string_len - s_LogHead ], s_LogHead );
-//    uint32_t remaining_len = string_len - s_LogHead;
-//    s_LogHead = kLogLoopIdx - remaining_len;
-//    
-//    memcpy( &s_LogBuffer[ s_LogHead ], string, remaining_len );
-//  }
-//  else
-//  {
-//    s_LogHead -= string_len;
-//    memcpy( &s_LogBuffer[ s_LogHead ], string, string_len );
-//  }
-//
-//  if ( s_LogHead != 0 )
-//  {
-//    s_LogBuffer[ s_LogHead - 1 ] = '\0';
-//  }
-//}
-
-//---------------------------------------------------------------------------------
-static void InitBackLoadingLogRing()
-{
-  MemZero( s_LogBuffer, sizeof( s_LogBuffer ) );
-  s_LogHead                  = 0;
-  s_LogReadHead              = 0;
-  s_LogHasLooped             = false;
-}
-
-//---------------------------------------------------------------------------------
-static void LogRingAppendEnd(const char* string)
-{
-  uint32_t string_len = StrLen(string);
-
-  if ( s_LogHead + string_len < kLogLoopIdx )
-  {
-    memcpy(&s_LogBuffer[s_LogHead], string, string_len);
-    s_LogHead += string_len;
-  }
-  else
-  {
-    s_LogHasLooped = true;
-
-    uint32_t initial_consume_len = kLogLoopIdx - s_LogHead;
-    memcpy( &s_LogBuffer[ s_LogHead ], string, initial_consume_len );
-
-    s_LogHead = string_len - initial_consume_len;
-    memcpy( &s_LogBuffer[ 0 ], &string[ initial_consume_len ], s_LogHead );
-  }
-
-  if ( s_LogHasLooped )
-  {
-    s_LogReadHead = ( s_LogHead != kLogLoopIdx - 1 ) ? s_LogHead + 1 : 0;
-    if ( s_LogReadHead != 0 )
-    {
-      s_LogBuffer[ s_LogReadHead - 1 ] = '\0';
-    }
-  }
-}
+static char  s_LogBuffer[ 4 MB ];
+Log::LogRing s_LogRing;
 
 //---------------------------------------------------------------------------------
 static void LogFunction( uint8_t flags, const char* fmt, va_list args )
@@ -112,12 +31,12 @@ static void LogFunction( uint8_t flags, const char* fmt, va_list args )
   Log::Timestamp ts = Log::MsToTimestamp( g_Time );
   snprintf( timestamp, sizeof(timestamp), "[%d:%02d:%02d:%03d]", ts.h, ts.m, ts.s, ts.ms );
 
-  LogRingAppendEnd( timestamp );
+  s_LogRing.Append( timestamp );
   
   char log_line[ 128 ];
   vsnprintf( log_line, sizeof( log_line ), fmt, args );
   
-  LogRingAppendEnd( log_line );
+  s_LogRing.Append( log_line );
 }
 
 //---------------------------------------------------------------------------------
@@ -126,7 +45,7 @@ int main( int argc, char* argv[] )
   UNREFFED_PARAMETER( argc );
   UNREFFED_PARAMETER( argv );
 
-  InitBackLoadingLogRing();
+  s_LogRing.InitWithBacking( &s_LogBuffer, sizeof( s_LogBuffer ) );
   Log::RegisterCallback( LogFunction );
 
   int ret = Kami::Init();
@@ -212,10 +131,10 @@ int main( int argc, char* argv[] )
 
         if ( ImGui::BeginTabItem( "Log" ) )
         {
-          ImGui::TextUnformatted( &s_LogBuffer[ s_LogReadHead ] );
-          if ( s_LogHead != 0 && s_LogHasLooped )
+          ImGui::TextUnformatted( s_LogRing.GetLogA() );
+          if ( const char* log_b = s_LogRing.GetLogB() )
           {
-            ImGui::TextUnformatted( &s_LogBuffer[0] );
+            ImGui::TextUnformatted( log_b );
           }
           ImGui::SetScrollHereY( 1.0f );
 
@@ -234,6 +153,7 @@ int main( int argc, char* argv[] )
 
   Render::Destroy();
   Kami::Destroy();
-  
+  s_LogRing.Destroy();
+
   return 0;
 }

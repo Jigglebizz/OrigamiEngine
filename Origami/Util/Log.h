@@ -23,4 +23,25 @@ namespace Log
     int h, m, s, ms;
   };
   Timestamp ENGINE_API MsToTimestamp( float ms );
+
+  //---------------------------------------------------------------------------------
+  class LogRing
+  {
+  private:
+    uint32_t m_WriteHead;
+    uint32_t m_ReadHead;
+    uint32_t m_BufferLoopIdx;
+    uint32_t m_BufferSize;
+    bool     m_HasLooped;
+    char*    m_Buffer;
+
+  public:
+    void InitWithBacking ( void* backing, uint32_t size );
+    void Destroy         ( );
+
+    void Append          ( const char* string );
+
+    const char* GetLogA  ( ) const;
+    const char* GetLogB  ( ) const;
+  };
 }
