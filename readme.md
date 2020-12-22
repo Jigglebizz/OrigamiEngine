@@ -10,7 +10,7 @@ C:\
 
 They are available at the following locations:  
 SDL:   https://www.libsdl.org/release/  
-STB:   ttps://github.com/nothings/stb.git  
+STB:   https://github.com/nothings/stb.git  
 RJSON: https://github.com/Tencent/rapidjson.git  
 
 
