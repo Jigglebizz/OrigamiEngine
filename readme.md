@@ -34,5 +34,5 @@ I'm linking SDL2 statically, which took a little 3 steps to get to build on Wind
 
 From here just hit build on the SDL2 projects for Debug and Release and you're good to go.
 
-#When creating your own game
+# When creating your own game
 Rename the Solution Name and solution folder to the same name. For example MyCoolGame.sln would be inside the a folder named MyCoolGame. It is totally fine to leave both as OrigamiEngine, however these must match or the tools will break.
