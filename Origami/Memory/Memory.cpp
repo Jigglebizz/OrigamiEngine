@@ -149,8 +149,6 @@ uint32_t Bitset::GetNextSetBit( uint32_t current ) const
   return (uint32_t)-1;
 }
 
-DISABLE_OPTS
-
 //---------------------------------------------------------------------------------
 void MemAllocHeap::InitWithBacking( void* data, size_t size, const char* name )
 {

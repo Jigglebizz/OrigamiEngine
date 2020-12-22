@@ -6,8 +6,6 @@
 #include <sys/stat.h>
 #include <fstream>
 
-DISABLE_OPTS
-
 #ifndef SOLUTION_NAME
 #define SOLUTION_NAME ""
 #endif
