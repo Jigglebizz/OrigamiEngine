@@ -8,10 +8,10 @@ C:\
     rapidjson\
 ```
 
-They are available at the following locations:
-SDL:   https://www.libsdl.org/release/
-STB:   ttps://github.com/nothings/stb.git
-RJSON: https://github.com/Tencent/rapidjson.git
+They are available at the following locations:  
+SDL:   https://www.libsdl.org/release/  
+STB:   ttps://github.com/nothings/stb.git  
+RJSON: https://github.com/Tencent/rapidjson.git  
 
 
 I'm linking SDL2 statically, which took a little 3 steps to get to build on Windows:
