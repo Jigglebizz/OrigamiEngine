@@ -61,27 +61,27 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Builders\</OutDir>
     <IntDir>$(SolutionDir)Output\int\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>C:\sdk\rapidjson;$(SolutionDir);C:\sdk\SDL2-2.0.12\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\sdk\rapidjson\include;$(SolutionDir);C:\sdk\SDL2-2.0.12\include;$(IncludePath)</IncludePath>
     <CodeAnalysisRuleSet>..\Templates\Origami.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Builders\</OutDir>
     <IntDir>$(SolutionDir)Output\int\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>C:\sdk\rapidjson;$(SolutionDir);C:\sdk\SDL2-2.0.12\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\sdk\rapidjson\include;$(SolutionDir);C:\sdk\SDL2-2.0.12\include;$(IncludePath)</IncludePath>
     <CodeAnalysisRuleSet>..\Templates\Origami.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'">
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Builders\</OutDir>
     <IntDir>$(SolutionDir)Output\int\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>C:\sdk\rapidjson;$(SolutionDir);C:\sdk\SDL2-2.0.12\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\sdk\rapidjson\include;$(SolutionDir);C:\sdk\SDL2-2.0.12\include;$(IncludePath)</IncludePath>
     <CodeAnalysisRuleSet>..\Templates\Origami.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SOLUTION_NAME="$(SolutionName)";_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Origami/pch.h</PrecompiledHeaderFile>
@@ -101,7 +101,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SOLUTION_NAME="$(SolutionName)";NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Origami/pch.h</PrecompiledHeaderFile>
@@ -125,6 +125,7 @@
       <LanguageStandard>Default</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>SOLUTION_NAME="$(SolutionName)";_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)Output\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>

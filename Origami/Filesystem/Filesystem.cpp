@@ -6,8 +6,14 @@
 #include <sys/stat.h>
 #include <fstream>
 
+DISABLE_OPTS
+
+#ifndef SOLUTION_NAME
+#define SOLUTION_NAME ""
+#endif
+
 //---------------------------------------------------------------------------------
-const char* GetProjectBasePath()
+const char* GetSolutionBasePath()
 {
   const char PATH_SEP = '\\';
 
@@ -19,16 +25,16 @@ const char* GetProjectBasePath()
 
     if ( cwd_path )
     {
-      const char* project_dir_name = "Origami";
-      char* project_folder_start   = strstr( cwd_path, project_dir_name );
+      const char* solution_dir_name = SOLUTION_NAME;
+      char* solution_folder_start   = strstr( cwd_path, solution_dir_name );
       
-      if ( project_folder_start == nullptr )
+      if ( solution_folder_start == nullptr )
       {
         Log::LogError( "Broken folder structure!" );
         return "";
       }
 
-      project_folder_start[ StrLen( project_dir_name ) + 1 ] = 0;
+      solution_folder_start[ StrLen( solution_dir_name ) + 1 ] = 0;
 
       snprintf( base_path, Filesystem::kMaxPathLen, "%s", cwd_path );
       free( cwd_path );
@@ -44,7 +50,7 @@ const char* GetAssetsBasePath()
 
   if ( *base_path == 0 )
   {
-    snprintf( base_path, Filesystem::kMaxPathLen, "%s%s", GetProjectBasePath(), "Assets" );
+    snprintf( base_path, Filesystem::kMaxPathLen, "%s%s", GetSolutionBasePath(), "Assets" );
   }
 
   return base_path;
@@ -78,7 +84,7 @@ const char* Filesystem::GetOutputPath()
   static char output_path[ kMaxPathLen ];
   if ( *output_path == 0 )
   {
-    snprintf( output_path, kMaxPathLen, "%s%s", GetProjectBasePath(), "Output" );
+    snprintf( output_path, kMaxPathLen, "%s%s", GetSolutionBasePath(), "Output" );
   }
   return output_path;
 }

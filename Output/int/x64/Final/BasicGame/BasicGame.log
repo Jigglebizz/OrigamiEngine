@@ -1,0 +1,5 @@
+﻿  pch.cpp
+  BaseCharacter.cpp
+  main.cpp
+  TestMovementComponent.cpp
+LINK : fatal error LNK1181: cannot open input file 'Origami.lib'

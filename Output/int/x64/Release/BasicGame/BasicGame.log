@@ -1,0 +1,11 @@
+﻿  pch.cpp
+  BaseCharacter.cpp
+  main.cpp
+  TestMovementComponent.cpp
+     Creating library C:\Users\Michael\source\repos\OrigamiEngine\Output\x64\Release\BasicGame.lib and object C:\Users\Michael\source\repos\OrigamiEngine\Output\x64\Release\BasicGame.exp
+  Generating code
+  13 of 3296 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    79 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  BasicGame.vcxproj -> C:\Users\Michael\source\repos\OrigamiEngine\Output\x64\Release\BasicGame.exe
