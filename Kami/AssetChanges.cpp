@@ -27,7 +27,7 @@ void AssetChanges::Init()
 
   s_UnrequestedCount    = 0;
   s_Unrequested         = (AssetChangeInfo*)g_DynamicHeap.Alloc( s_UnrequestedCapacity * sizeof( AssetChangeInfo ) );
-  s_UnrequestedBitset.InitFromDynamicHeap( s_UnrequestedCapacity );
+  s_UnrequestedBitset.InitFromHeap( &g_DynamicHeap, s_UnrequestedCapacity );
   s_UnrequestedMutex.Init( "Kami Asset Changes" );
 
   s_RequestedCapacity = g_GlobalSettings.GetU32( Crc32( "Asset Capacity" ) );
