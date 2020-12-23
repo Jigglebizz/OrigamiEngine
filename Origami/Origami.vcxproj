@@ -159,6 +159,7 @@
     <ClInclude Include="Command\Command.h" />
     <ClInclude Include="Concurrency\Mutex.h" />
     <ClInclude Include="Concurrency\Thread.h" />
+    <ClInclude Include="Container\HashMap.h" />
     <ClInclude Include="Filesystem\Filesystem.h" />
     <ClInclude Include="Game\Game.h" />
     <ClInclude Include="Game\GlobalSettings.h" />
@@ -194,6 +195,7 @@
     <ClCompile Include="Asset\AssetLoader.cpp" />
     <ClCompile Include="Concurrency\Mutex.cpp" />
     <ClCompile Include="Concurrency\Thread.cpp" />
+    <ClCompile Include="Container\HashMap.cpp" />
     <ClCompile Include="Filesystem\Filesystem.cpp" />
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Game\GlobalSettings.cpp" />

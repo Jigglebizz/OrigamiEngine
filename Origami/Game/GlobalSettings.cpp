@@ -175,6 +175,21 @@ void DoForEachBudget( rapidjson::Document& doc, GlobalSettings::ProjectType proj
 }
 
 //---------------------------------------------------------------------------------
+template< typename Cb >
+void DoForEachValue( rapidjson::Document& doc, GlobalSettings::ProjectType project_type, Cb callback )
+{
+  const char* project_type_desc = ProjectTypeToJsonDesc( project_type );
+  if ( doc.HasMember( project_type_desc ) )
+  {
+    const rapidjson::Value& values = doc[ project_type_desc ];
+    for ( rapidjson::Value::ConstMemberIterator val_itr = values.MemberBegin(); val_itr != values.MemberEnd(); ++val_itr )
+    {
+      callback( val_itr );
+    }
+  }
+}
+
+//---------------------------------------------------------------------------------
 void GlobalSettings::Init( ProjectType project_type )
 {
   m_NumHeapTemplates = 0;
@@ -242,12 +257,71 @@ void GlobalSettings::Init( ProjectType project_type )
   }
   #endif
 
+  // Now init the rest of the properties in the .set file
+  const char* project_type_desc = ProjectTypeToJsonDesc( project_type );
+
+  if ( doc.HasMember( project_type_desc ) )
+  {
+    uint32_t settings_u32_count    = 0;
+    uint32_t settings_string_count = 0;
+    size_t   settings_strings_size = 0;
+    DoForEachValue( doc, project_type, [ &settings_u32_count, &settings_string_count, &settings_strings_size ]( const rapidjson::Value::ConstMemberIterator& kv_pair ) 
+    {
+      if ( kv_pair->value.IsUint() )
+      {
+        settings_u32_count++;
+      }
+      else if ( kv_pair->value.IsString() )
+      {
+        settings_string_count++;
+        settings_strings_size += (size_t)StrLen( kv_pair->value.GetString() ) + 1;
+      }
+    });
+
+    if ( settings_u32_count > 0 )
+    {
+      m_U32Values.InitOnHeap( &g_DynamicHeap, settings_u32_count );
+    }
+    if ( settings_string_count > 0 )
+    {
+      m_StringValues.InitOnHeap( &g_DynamicHeap, settings_string_count );
+      m_Strings = (char*)g_DynamicHeap.Alloc( settings_strings_size );
+    }
+
+    char* current_str_ptr = m_Strings;
+
+    DoForEachValue( doc, project_type, [ this, &current_str_ptr ]( const rapidjson::Value::ConstMemberIterator& kv_pair )
+    {
+      if ( kv_pair->value.IsInt() )
+      {
+        uint32_t key   = Crc32( kv_pair->name.GetString() );
+        uint32_t value = kv_pair->value.GetInt();
+
+        m_U32Values.Insert( key, value );
+      }
+      else if ( kv_pair->value.IsString() )
+      {
+        uint32_t    key   = Crc32( kv_pair->name.GetString() );
+        const char* value = kv_pair->value.GetString();
+        size_t      value_len = (size_t)StrLen( value ) + 1;
+        memcpy( current_str_ptr, value, value_len );
+
+        m_StringValues.Insert( key, current_str_ptr );
+        current_str_ptr += value_len;
+      }
+    });
+  }
+
   free( engine_settings_file_contents );
 }
 
 //---------------------------------------------------------------------------------
 void GlobalSettings::Destroy()
 {
+  m_U32Values.Destroy();
+  m_StringValues.Destroy();
+  g_DynamicHeap.Free( m_Strings );
+
   g_DynamicHeap.Free( m_HeapTemplates );
   Memory::DestroyGlobalBacking();
 }
@@ -260,4 +334,20 @@ const HeapTemplate* GlobalSettings::GetHeapTemplate( const char* name )
   ASSERT_MSG( idx != -1, "Heap template not found" );
 
   return &m_HeapTemplates[ idx ];
+}
+
+//---------------------------------------------------------------------------------
+uint32_t GlobalSettings::GetU32( uint32_t property_name_hash )
+{
+  uint32_t* value = m_U32Values.At( property_name_hash );
+  ASSERT_MSG( value != nullptr, "Looked up invalid setting" );
+  return *value;
+}
+
+//---------------------------------------------------------------------------------
+const char* GlobalSettings::GetString(uint32_t property_name_hash)
+{
+  const char** value = m_StringValues.At( property_name_hash );
+  ASSERT_MSG( value != nullptr, "Looked up invalid setting" );
+  return *value;
 }

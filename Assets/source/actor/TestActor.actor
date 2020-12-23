@@ -1,23 +1,19 @@
 {
-  "Build Dependents":
-  [
-    "texture/megaman.png"
-  ],
   "Components":
   [
-	{
-	  "ComponentId": "0x‭993878A0",
-	  "Texture": "0xD94B1C49",
-	  "Layer": 0,
-	  "FrameSize":
-	    [
-		  50,
-		  49
-		],
-	  "FrameStride": 8
-	},
-	{
-	  "ComponentId": "0xD94B1C49"
-	}
+    {
+      "ComponentId": "0x‭993878A0",
+      "Texture": "0xD94B1C49",
+      "Layer": 0,
+      "FrameSize":
+        [
+          50,
+          49
+        ],
+      "FrameStride": 8
+    },
+    {
+      "ComponentId": "0xD94B1C49"
+    }
   ]
 }

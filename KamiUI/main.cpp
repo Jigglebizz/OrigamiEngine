@@ -98,7 +98,6 @@ int main( int argc, char* argv[] )
         {
           uint32_t builder_count;
           const Kami::BuilderInfo* builder_infos = Kami::GetBuilderInfos( &builder_count );
-          UNREFFED_PARAMETER( builder_infos );
 
           if ( ImGui::BeginTable( "##builders_table", 4, ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable ) )
           {

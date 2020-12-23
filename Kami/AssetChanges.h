@@ -14,11 +14,11 @@ namespace AssetChanges
     uint32_t m_BuiltVersion;
     char     m_Name        [ Filesystem::kMaxAssetNameLen            ];
 
-    uint32_t m_DependencyCount;
-    AssetId  m_Dependencies[ BuilderCommon::kMaxAssetDependencyCount ];
+    //uint32_t m_DependencyCount;
+    //AssetId  m_Dependencies[ BuilderCommon::kMaxAssetDependencyCount ];
 
-    uint32_t m_DependentsCount;
-    AssetId  m_Dependents  [ BuilderCommon::kMaxAssetDependencyCount ];
+    //uint32_t m_DependentsCount;
+    //AssetId  m_Dependents  [ BuilderCommon::kMaxAssetDependencyCount ];
   };
 
         void             Init();

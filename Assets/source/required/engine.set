@@ -26,5 +26,9 @@
         "Budget":  "1GB"
       }
     }
+  },
+  "Kami":
+  {
+    "Asset Capacity": 262144,
   }
 }

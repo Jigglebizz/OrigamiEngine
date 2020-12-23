@@ -76,7 +76,7 @@ void ActorBase::AddComponent( void* init_params )
   Actor::ActorCon* con = &Actor::g_ActorCon;
 
   ASSERT_MSG( m_ComponentCount < kMaxComponents, "Attempting to add too many components to actor!" );
-  uint64_t id = ComponentClass::GetId();
+  constexpr uint64_t id = ComponentClass::GetId();
 
   size_t existing_component = BinarySearch64( id, &m_Components, sizeof( ComponentInfo ), m_ComponentCount );
   ASSERT_MSG( existing_component == 0xffffffffffffffff, "Attempting to add duplicate component to actor!" );
