@@ -19,17 +19,21 @@ void ENGINE_API MemZero( void* dst, size_t n );
 //---------------------------------------------------------------------------------
 // Bitset
 //---------------------------------------------------------------------------------
+class MemAllocHeap;
+
 class Bitset
 {
 private:
-  uint8_t* m_Set;
-  uint32_t m_NumBytes;
-  bool     m_OwnsBacking;
+  uint8_t*      m_Set;
+  uint32_t      m_NumBytes;
+  MemAllocHeap* m_OwningHeap;
 
 public:
+  Bitset() : m_OwningHeap( nullptr ) {}
+
   static uint32_t       ENGINE_API GetNumberOfBytesForElements ( uint32_t num_elements );
 
-         void           ENGINE_API InitFromDynamicHeap         ( uint32_t num_bits );
+         void           ENGINE_API InitFromHeap                ( MemAllocHeap* heap, uint32_t num_bits );
          void           ENGINE_API InitWithBacking             ( void* backing, uint32_t num_bits );
          void*          ENGINE_API GetBackingBase              ( );
          void           ENGINE_API Destroy                     ( );

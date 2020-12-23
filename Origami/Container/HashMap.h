@@ -1,7 +1,5 @@
 #pragma once
 
-DISABLE_OPTS
-
 //---------------------------------------------------------------------------------
 template< typename K, typename V >
 class HashMap

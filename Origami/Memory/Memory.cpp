@@ -43,11 +43,11 @@ uint32_t Bitset::GetNumberOfBytesForElements(uint32_t num_elements)
 }
 
 //---------------------------------------------------------------------------------
-void Bitset::InitFromDynamicHeap( uint32_t num_bits )
+void Bitset::InitFromHeap( MemAllocHeap* heap, uint32_t num_bits )
 {
   m_NumBytes = GetNumberOfBytesForElements( num_bits );
 
-  m_Set = (uint8_t*)g_DynamicHeap.Alloc( m_NumBytes );
+  m_Set = (uint8_t*)heap->Alloc( m_NumBytes );
   if ( m_Set == nullptr )
   {
     Log::LogError( "Could not allocate memory for bitset!" );
@@ -55,7 +55,7 @@ void Bitset::InitFromDynamicHeap( uint32_t num_bits )
   }
 
   MemZero( m_Set, m_NumBytes );
-  m_OwnsBacking = true;
+  m_OwningHeap = heap;
 }
 
 //---------------------------------------------------------------------------------
@@ -65,15 +65,14 @@ void Bitset::InitWithBacking( void* backing, uint32_t num_bits )
   m_NumBytes = GetNumberOfBytesForElements( num_bits );
 
   MemZero( backing, m_NumBytes );
-  m_OwnsBacking = false;
 }
 
 //---------------------------------------------------------------------------------
 void Bitset::Destroy()
 {
-  if ( m_OwnsBacking && m_Set )
+  if ( m_OwningHeap && m_Set )
   {
-    g_DynamicHeap.Free( m_Set );
+    m_OwningHeap->Free( m_Set );
   }
 }
 

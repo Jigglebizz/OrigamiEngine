@@ -5,8 +5,6 @@
 #include "Origami/Concurrency/Mutex.h"
 #include "Origami/Game/GlobalSettings.h"
 
-//static constexpr uint32_t kMaxAssetCount = 256 * 1024;
-
 DISABLE_OPTS
 
 //---------------------------------------------------------------------------------
@@ -32,7 +30,7 @@ void AssetChanges::Init()
   s_UnrequestedBitset.InitFromDynamicHeap( s_UnrequestedCapacity );
   s_UnrequestedMutex.Init( "Kami Asset Changes" );
 
-  s_RequestedCapacity = 1024;
+  s_RequestedCapacity = g_GlobalSettings.GetU32( Crc32( "Asset Capacity" ) );
   s_RequestedCount    = 0;
   s_Requested         = (AssetChangeInfo*)g_DynamicHeap.Alloc( s_RequestedCapacity * sizeof( AssetChangeInfo ) );
 }
