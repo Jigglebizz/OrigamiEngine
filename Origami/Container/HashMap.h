@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Origami/Asset/Asset.h"
+#include "Origami/Util/Log.h"
+
 //---------------------------------------------------------------------------------
 template< typename K, typename V >
 class HashMap
@@ -20,15 +23,22 @@ private:
   uint8_t*      m_Backing;
   size_t        m_BackingSize;
   uint32_t      m_NumBuckets;
+  uint32_t      m_NumElements;
   MemAllocHeap* m_OwningHeap;
 
   BucketHead*   m_BucketsBase;
   Element*      m_FreeElementHead;
 
-  uint32_t    HashFunction( K input ) const;
-
 public:
-  HashMap() : m_Backing( nullptr ) {}
+  HashMap() 
+  : m_Backing         ( nullptr )
+  , m_BackingSize     ( 0 )
+  , m_NumBuckets      ( 0 )
+  , m_NumElements     ( 0 )
+  , m_OwningHeap      ( nullptr )
+  , m_BucketsBase     ( nullptr )
+  , m_FreeElementHead ( nullptr )
+  {}
 
   static constexpr uint32_t kDefaultBucketNum = 16;
 
@@ -40,9 +50,25 @@ public:
          V*       ENGINE_API At                     ( const K& key );
          void     ENGINE_API Remove                 ( const K& key );
          uint32_t ENGINE_API GetCapacity            ( ) const;
+         uint32_t ENGINE_API GetCount               ( ) const;
   static size_t   ENGINE_API GetRequiredBackingSize ( uint32_t capacity, uint32_t num_buckets = kDefaultBucketNum );
 
+         uint32_t ENGINE_API IsFull                 ( ) const;
+  const  K*       ENGINE_API GetFirstKey            ( ) const;
 };
+
+//---------------------------------------------------------------------------------
+template< typename V >
+uint32_t HashFunction( V input, uint32_t num_buckets )
+{
+  return input % num_buckets;
+}
+
+//---------------------------------------------------------------------------------
+inline uint32_t HashFunction(AssetId input, uint32_t num_buckets)
+{
+  return input.ToU32() % num_buckets;
+}
 
 //---------------------------------------------------------------------------------
 template< typename K, typename V >
@@ -54,7 +80,14 @@ uint32_t HashMap<K, V>::GetCapacity ( ) const
   }
 
   uint32_t buckets_size = m_NumBuckets * sizeof ( BucketHead );
-  return (uint32_t)(( m_BackingSize - buckets_size ) / sizeof( Element ));
+  return (uint32_t)( ( m_BackingSize - buckets_size ) / sizeof( Element ) );
+}
+
+//---------------------------------------------------------------------------------
+template< typename K, typename V >
+uint32_t HashMap< K, V >::GetCount( ) const
+{
+  return m_NumElements;
 }
 
 //---------------------------------------------------------------------------------
@@ -91,6 +124,7 @@ void HashMap< K, V >::InitWithBacking( void* backing, size_t size, uint32_t num_
 
   m_FreeElementHead = elements_base;
   m_OwningHeap      = nullptr;
+  m_NumElements     = 0;
 }
 
 //---------------------------------------------------------------------------------
@@ -133,7 +167,7 @@ void HashMap< K, V >::Insert( const K& key, const V& value )
   new_elem->m_Value = value;
 
 
-  uint32_t i_bucket = HashFunction( key );
+  uint32_t i_bucket = HashFunction( key, m_NumBuckets );
   Element* list_elem = m_BucketsBase[ i_bucket ].elements;
   if ( list_elem == nullptr )
   {
@@ -148,6 +182,8 @@ void HashMap< K, V >::Insert( const K& key, const V& value )
     }
     list_elem->m_Next = new_elem;
   }
+
+  m_NumElements++;
 }
 
 //---------------------------------------------------------------------------------
@@ -159,7 +195,7 @@ V* HashMap<K, V>::At( const K& key )
     return nullptr;
   }
 
-  uint32_t i_bucket = HashFunction( key );
+  uint32_t i_bucket = HashFunction( key, m_NumBuckets );
   Element* list_elem = m_BucketsBase[ i_bucket ].elements;
   while ( list_elem != nullptr )
   {
@@ -180,7 +216,7 @@ void HashMap<K, V>::Remove(const K& key)
 {
   ASSERT_MSG(m_Backing != nullptr, "HashMap not initialized!");
 
-  uint32_t i_bucket = HashFunction( key );
+  uint32_t i_bucket = HashFunction( key, m_NumBuckets );
   Element* list_elem = m_BucketsBase[ i_bucket ].elements;
 
   if ( list_elem->m_Key == key )
@@ -192,6 +228,7 @@ void HashMap<K, V>::Remove(const K& key)
 
     list_elem->m_Next = m_FreeElementHead;
     m_FreeElementHead = list_elem;
+    m_NumElements--;
     return;
   }
   
@@ -204,6 +241,7 @@ void HashMap<K, V>::Remove(const K& key)
       prev_elem->m_Next = list_elem->m_Next;
       list_elem->m_Next = m_FreeElementHead;
       m_FreeElementHead = list_elem;
+      m_NumElements--;
       return;
     }
 
@@ -216,7 +254,30 @@ void HashMap<K, V>::Remove(const K& key)
 
 //---------------------------------------------------------------------------------
 template< typename K, typename V >
-uint32_t HashMap< K, V >::HashFunction( K input ) const
+uint32_t HashMap< K, V >::IsFull() const
 {
-  return input % m_NumBuckets;
+  return m_FreeElementHead != nullptr;
+}
+
+//---------------------------------------------------------------------------------
+template< typename K, typename V >
+const K* HashMap< K, V >::GetFirstKey( ) const
+{
+  BucketHead* bucket = m_BucketsBase;
+  while ( bucket->elements == nullptr )
+  {
+    if ( INDEX_OF( m_BucketsBase, bucket ) == m_NumBuckets )
+    {
+      return nullptr;
+    }
+    bucket++;
+  }
+
+  Element* element = bucket->elements;
+  while ( element->m_Next != nullptr )
+  {
+    element = element->m_Next;
+  }
+
+  return &element->m_Key;
 }

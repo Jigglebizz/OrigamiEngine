@@ -2,7 +2,7 @@
   "Memory":
   {
     "Common":
-     {
+    {
       "DynamicHeap":
       {
         "Budget" : "128MB"
@@ -29,6 +29,6 @@
   },
   "Kami":
   {
-    "Asset Capacity": 262144,
+    "Asset Capacity": 262144
   }
 }

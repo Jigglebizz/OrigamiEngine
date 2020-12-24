@@ -27,6 +27,4 @@ namespace AssetChanges
         uint32_t         GetChangeCount();
   
   const AssetChangeInfo* GetInfoForAssetId( AssetId id );
-  const AssetChangeInfo* GetNextInfo();
-        void             RemoveInfo( const AssetChangeInfo* info );
 }

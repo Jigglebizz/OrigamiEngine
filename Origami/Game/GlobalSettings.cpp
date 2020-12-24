@@ -11,6 +11,7 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
+#include <rapidjson/error/en.h>
 
 GlobalSettings g_GlobalSettings;
 
@@ -203,7 +204,12 @@ void GlobalSettings::Init( ProjectType project_type )
   Filesystem::ReadFile( engine_settings_file, engine_settings_file_contents, &file_size );
 
   rapidjson::Document doc;
-  doc.Parse< rapidjson::kParseStopWhenDoneFlag >( engine_settings_file_contents );
+  rapidjson::ParseResult ok = doc.Parse< rapidjson::kParseStopWhenDoneFlag >( engine_settings_file_contents );
+  if ( !ok )
+  {
+    Log::LogError( "engine.set is formatted incorrectly: %s:%u", rapidjson::GetParseError_En( ok.Code() ), ok.Offset() );
+    ASSERT_ALWAYS( "^^^^^" );
+  }
 
   size_t   total_memory_size = 0;
   uint32_t strings_size = 0;

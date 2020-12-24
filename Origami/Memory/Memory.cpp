@@ -248,6 +248,12 @@ void MemAllocHeap::Free( void* ptr )
 }
 
 //---------------------------------------------------------------------------------
+const char* MemAllocHeap::GetName() const
+{
+  return m_HeapName;
+}
+
+//---------------------------------------------------------------------------------
 HeapAuditInfo MemAllocHeap::Audit()
 {
   HeapAuditInfo info;

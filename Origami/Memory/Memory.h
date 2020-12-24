@@ -78,11 +78,12 @@ class MemAllocHeap
 {
 private:
   void* m_OwnedData;
-public:
-  static constexpr uint32_t kMaxHeapNameSize = 32;
-
   tlsf_t m_Tlsf;
+
+  static constexpr uint32_t kMaxHeapNameSize = 32;
   char   m_HeapName[ kMaxHeapNameSize ];
+public:
+
 
   void          ENGINE_API InitWithBacking ( void* data, size_t size, const char* name );
   void          ENGINE_API InitFromTemplate( const HeapTemplate* heap_template );
@@ -92,6 +93,8 @@ public:
   void*         ENGINE_API MemAlign        ( size_t align, size_t bytes );
   void*         ENGINE_API Realloc         ( void* ptr, size_t size );
   void          ENGINE_API Free            ( void* ptr );
+
+  const char*   ENGINE_API GetName() const;
 
   HeapAuditInfo ENGINE_API Audit   ();
 };
