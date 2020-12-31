@@ -10,6 +10,7 @@
 #include "Origami/Filesystem/Filesystem.h"
 
 #include "Kami/Kami.h"
+#include "Kami/AssetChanges.h"
 
 #include <chrono>
 
@@ -86,6 +87,13 @@ int main( int argc, char* argv[] )
       ImGui::Begin( "Kami", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar );//, ImGuiWindowFlags_NoInputs );
 
         ImGui::BeginTabBar( "##MainNavTabs" );
+
+        if ( ImGui::BeginTabItem( "Build Status" ) )
+        {
+          ImGui::Text( "Unrequested: %7lu   Requsted: %7lu   Building: %7lu   Built: %7lu", AssetChanges::GetUnreqestedCount(), 0, 0, 0 );
+
+          ImGui::EndTabItem();
+        }
 
         if ( ImGui::BeginTabItem( "Settings" ) )
         {

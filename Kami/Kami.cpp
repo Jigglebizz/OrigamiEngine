@@ -225,7 +225,7 @@ int Kami::Init()
   // scan filesystem for file changes and new files
   Log::LogInfo( "Scanning for changes since last boot\n" );
   ScanFilesystemForChangedAssets();
-  Log::LogInfo( "Found %lu assets that need to be built\n", AssetChanges::GetChangeCount() );
+  Log::LogInfo( "Found %lu assets that need to be built\n", AssetChanges::GetUnreqestedCount() );
   
   // create change notification handle
   Filesystem::WatchDirectoryForChanges( Filesystem::GetAssetsSourcePath(), &g_FsWatchThread, &FileChangedCallback );

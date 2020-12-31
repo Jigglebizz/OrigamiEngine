@@ -24,7 +24,9 @@ namespace AssetChanges
         void             Init();
         void             Destroy();
         void             AddAssetChangeInfo( const AssetChangeInfo* info );
-        uint32_t         GetChangeCount();
+        uint32_t         GetUnreqestedCount();
   
   const AssetChangeInfo* GetInfoForAssetId( AssetId id );
+  const AssetChangeInfo* GetNextUnrequestedAsset( );
+        void             RequestAsset( AssetId id );
 }

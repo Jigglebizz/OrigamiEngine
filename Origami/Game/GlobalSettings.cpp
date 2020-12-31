@@ -199,6 +199,8 @@ void GlobalSettings::Init( ProjectType project_type )
   snprintf( engine_settings_file, sizeof( engine_settings_file ), "%s\\required\\engine.set", Filesystem::GetAssetsSourcePath() );
   
   size_t file_size = Filesystem::GetFileSize( engine_settings_file );
+  ASSERT_MSG( file_size != Filesystem::kInvalidFilesize, "settings file not present" );
+
   char* engine_settings_file_contents = (char*)malloc( file_size );
 
   Filesystem::ReadFile( engine_settings_file, engine_settings_file_contents, &file_size );

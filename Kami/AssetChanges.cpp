@@ -50,14 +50,14 @@ void AssetChanges::AddAssetChangeInfo( const AssetChangeInfo* info )
   //BuilderCommon::ParseAsset( full_asset_path, &asset_data );
 
   //new_change->m_DependentsCount = asset_data.m_BuildDependentsCount;
-  //memcpy_s( new_change->m_Dependents, sizeof( new_change->m_Dependents ), asset_data.m_BuildDependents,   sizeof( asset_data.m_BuildDependents )   );
+  //memcpy_s( new_change->m_Dependents, sizeof( new_change->m_Dependents ), asset_data.m_BuildDependents,   sizeof( asset_data.m_BuildDependents ) );
 
   //new_change->m_DependencyCount = asset_data.m_LoadDependenciesCount;
   //memcpy_s( new_change->m_Dependencies, sizeof( new_change->m_Dependencies ), asset_data.m_LoadDependencies, sizeof( asset_data.m_LoadDependencies ) );
 }
 
 //---------------------------------------------------------------------------------
-uint32_t AssetChanges::GetChangeCount()
+uint32_t AssetChanges::GetUnreqestedCount()
 {
   ScopedLock asset_change_lock( &s_UnrequestedMutex );
   return s_Unrequested.GetCount();
@@ -73,4 +73,46 @@ const AssetChanges::AssetChangeInfo* AssetChanges::GetInfoForAssetId( AssetId id
     return info;
   }
   return s_Requested.At(id);
+}
+
+//---------------------------------------------------------------------------------
+const AssetChanges::AssetChangeInfo* AssetChanges::GetNextUnrequestedAsset()
+{
+  ScopedLock asset_change_lock( &s_UnrequestedMutex );
+
+  ASSERT_MSG( s_Unrequested.IsEmpty() == false, "No Unrequested assets to get" );
+
+  return s_Unrequested.At( *s_Unrequested.GetFirstKey() );
+}
+
+//---------------------------------------------------------------------------------
+void AssetChanges::RequestAsset( AssetId asset_id )
+{
+  AssetChangeInfo* info = nullptr;
+
+  {
+    ScopedLock unrequested_lock( &s_UnrequestedMutex );
+
+    if ( s_Unrequested.Contains( asset_id ) )
+    {
+      info = s_Unrequested.At( asset_id );
+      s_Unrequested.Remove( asset_id );
+    }
+  }
+
+  {
+    ScopedLock requested_lock( &s_RequestedMutex );
+
+    if ( s_Requested.Contains( asset_id ) == false )
+    {
+      if ( info != nullptr )
+      {
+        s_Requested.Insert( asset_id, *info );
+      }
+      else
+      {
+        Log::LogError( "Requested unknown Asset ID %lu\n", asset_id.ToU32() );
+      }
+    }
+  }
 }

@@ -22,7 +22,11 @@ void BuilderCommon::Destroy()
 //---------------------------------------------------------------------------------
 void BuilderCommon::ParseAsset( const char* asset_file, AssetCommonData* asset_data_out )
 {
+  UNREFFED_PARAMETER( asset_data_out );
+
   uint64_t json_size = Filesystem::GetFileSize( asset_file );
+  ASSERT_MSG ( json_size == Filesystem::kInvalidFilesize, "Invalid file" );
+
   char* json_data    = (char*)g_DynamicHeap.Alloc( json_size );
 
   Filesystem::ReadFile( asset_file, json_data, &json_size );

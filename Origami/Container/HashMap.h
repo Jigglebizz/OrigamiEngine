@@ -53,7 +53,10 @@ public:
          uint32_t ENGINE_API GetCount               ( ) const;
   static size_t   ENGINE_API GetRequiredBackingSize ( uint32_t capacity, uint32_t num_buckets = kDefaultBucketNum );
 
-         uint32_t ENGINE_API IsFull                 ( ) const;
+         bool     ENGINE_API IsFull                 ( ) const;
+         bool     ENGINE_API IsEmpty                ( ) const;
+         bool     ENGINE_API Contains               ( const K& key ) const;
+         
   const  K*       ENGINE_API GetFirstKey            ( ) const;
 };
 
@@ -190,10 +193,8 @@ void HashMap< K, V >::Insert( const K& key, const V& value )
 template< typename K, typename V>
 V* HashMap<K, V>::At( const K& key )
 {
-  if ( m_Backing == nullptr )
-  {
-    return nullptr;
-  }
+  ASSERT_MSG( m_Backing != nullptr, "HashMap not initialized!" );
+
 
   uint32_t i_bucket = HashFunction( key, m_NumBuckets );
   Element* list_elem = m_BucketsBase[ i_bucket ].elements;
@@ -254,9 +255,37 @@ void HashMap<K, V>::Remove(const K& key)
 
 //---------------------------------------------------------------------------------
 template< typename K, typename V >
-uint32_t HashMap< K, V >::IsFull() const
+bool HashMap< K, V >::Contains( const K& key ) const
 {
-  return m_FreeElementHead != nullptr;
+  ASSERT_MSG( m_Backing != nullptr, "HashMap not initialized!" );
+
+  uint32_t i_bucket = HashFunction( key, m_NumBuckets );
+  Element* list_elem = m_BucketsBase[ i_bucket ].elements;
+  while ( list_elem != nullptr )
+  {
+    if ( list_elem->m_Key == key )
+    {
+      return true;
+    }
+
+    list_elem = list_elem->m_Next;
+  }
+
+  return false;
+}
+
+//---------------------------------------------------------------------------------
+template< typename K, typename V >
+bool HashMap< K, V >::IsFull() const
+{
+  return m_FreeElementHead == nullptr;
+}
+
+//---------------------------------------------------------------------------------
+template< typename K, typename V >
+bool HashMap< K, V >::IsEmpty() const
+{
+  return m_NumElements == 0;
 }
 
 //---------------------------------------------------------------------------------
